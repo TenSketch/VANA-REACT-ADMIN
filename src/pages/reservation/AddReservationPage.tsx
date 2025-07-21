@@ -1,8 +1,10 @@
-
+import ReservationForm from "@/components/reservation/ReservationForm";
 
 const AddReservationPage = () => {
   return (
-    <div>AddReservationPage</div>
+    <div>
+      <ReservationForm/>
+    </div>
   )
 }
 

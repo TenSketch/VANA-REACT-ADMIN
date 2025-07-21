@@ -1,8 +1,10 @@
-
+import RoomForm from "@/components/rooms/RoomForm";
 
 const AddRoomPage = () => {
   return (
-    <div>AddRoomPage</div>
+    <div>
+      <RoomForm />
+    </div>
   )
 }
 

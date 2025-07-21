@@ -1,9 +1,11 @@
-
+import AddResortForm from '@/components/resorts/ResortFormComp'
 
 const AddResortsPage = () => {
   return (
-    <div>AddResortsPage</div>
+    <div>
+      <AddResortForm />
+    </div>
   )
 }
 
-export default AddResortsPage
+export default AddResortsPage 

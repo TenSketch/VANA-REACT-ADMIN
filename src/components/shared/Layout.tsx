@@ -19,11 +19,11 @@ const Layout = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar onMenuClick={toggleSidebar} />
       
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0">
         <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         
         {/* Main content */}
-        <main className="flex-1 transition-all duration-300 flex flex-col">
+        <main className="flex-1 transition-all duration-300 flex flex-col min-h-0">
           <div className="flex-1 p-4">
             <Outlet />
           </div>

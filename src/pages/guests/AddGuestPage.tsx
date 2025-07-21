@@ -1,8 +1,11 @@
 
+import GuestForm from "@/components/guests/GuestForm";
 
 const AddGuestPage = () => {
   return (
-    <div>AddGuestPage</div>
+    <div>
+      <GuestForm />
+    </div>
   )
 }
 

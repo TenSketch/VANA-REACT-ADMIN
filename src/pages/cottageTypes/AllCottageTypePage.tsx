@@ -1,8 +1,10 @@
-
+import CottageTable from '@/components/cottage/CottageTable';
 
 const AllCottageTypePage = () => {
   return (
-    <div>AllCottageTypePage</div>
+    <div>
+      <CottageTable />
+    </div>
   )
 }
 

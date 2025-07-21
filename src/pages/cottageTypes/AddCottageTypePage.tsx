@@ -1,7 +1,10 @@
+import CottageForm from "@/components/cottage/CottageForm";
 
 const AddCottageTypePage = () => {
   return (
-    <div>AddCottageTypePage</div>
+    <div>
+      <CottageForm />
+    </div>
   )
 }
 

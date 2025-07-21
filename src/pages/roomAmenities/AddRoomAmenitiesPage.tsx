@@ -1,7 +1,9 @@
-
+import AmenityForm from "@/components/roomAmenities/AddAmenitiesForm";
 const AddRoomAmenitiesPage = () => {
   return (
-    <div>AddRoomAmenitiesPage</div>
+    <div>
+      <AmenityForm />
+    </div>
   )
 }
 

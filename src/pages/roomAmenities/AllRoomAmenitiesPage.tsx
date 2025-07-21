@@ -1,8 +1,11 @@
 
+import Table from '@/components/roomAmenities/AllAmenitiesTable';
 
 const AllRoomAmenitiesPage = () => {
   return (
-    <div>AllRoomAmenitiesPage</div>
+    <div>
+      <Table />
+    </div>
   )
 }
 
