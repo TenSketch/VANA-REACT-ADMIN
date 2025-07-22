@@ -1,8 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {flexRender,getCoreRowModel,useReactTable, type ColumnDef} from "@tanstack/react-table";
 
 interface ResortDetailData {
   id?: string;
@@ -39,253 +37,185 @@ interface ResortDetailPanelProps {
 const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) => {
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1" onClick={onClose} />
-      {/* Panel */}
-      <div className="w-1/2 bg-white shadow-xl overflow-y-auto border-l border-slate-200">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
-            <div>
-              <h2 className="text-2xl font-semibold text-slate-800">Resort Details</h2>
-              <p className="text-slate-600">View resort information</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="p-2"
+  // Basic Information Data
+  const basicInfoData = [
+    { field: "Resort Name", value: resort.resortName },
+    { field: "Slug", value: resort.slug },
+    { field: "Contact Person Name", value: resort.contactPersonName },
+    { field: "Contact Number", value: resort.contactNumber },
+    { field: "Email", value: resort.email },
+    { field: "Website", value: resort.website },
+    { field: "Support Number", value: resort.supportNumber },
+    { field: "Room ID Prefix", value: resort.roomIdPrefix },
+  ];
+
+  // Address Information Data
+  const addressData = [
+    { field: "Address Line 1", value: resort.addressLine1 },
+    { field: "Address Line 2", value: resort.addressLine2 },
+    { field: "City / District", value: resort.cityDistrict },
+    { field: "State / Province", value: resort.stateProvince },
+    { field: "Postal Code", value: resort.postalCode },
+    { field: "Country", value: resort.country },
+  ];
+
+  // Food Information Data
+  const foodData = [
+    { field: "Food Providing", value: resort.foodProviding },
+    { field: "Extra Guest Charges", value: resort.extraGuestCharges },
+  ];
+
+  // Food Details Data (separate for textarea)
+  const foodDetailsData = [
+    { field: "Food Details", value: resort.foodDetails },
+  ];
+
+  // Payment Information Data
+  const paymentData = [
+    { field: "UPI ID", value: resort.upiId },
+  ];
+
+  // Terms Data
+  const termsData = [
+    { field: "Terms & Conditions", value: resort.termsAndConditions },
+  ];
+
+  // Column definitions for standard information tables
+  const infoColumns: ColumnDef<{field: string; value: string}>[] = [
+    {
+      accessorKey: "field",
+      header: "Field",
+      cell: ({ row }) => (
+        <div className="font-medium text-slate-700 min-w-[120px]">
+          {row.getValue("field")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "value",
+      header: "Value",
+      cell: ({ row }) => {
+        const value = row.getValue("value") as string;
+        const field = row.getValue("field") as string;
+        
+        if (field === "Email") {
+          return (
+            <a 
+              href={`mailto:${value}`} 
+              className="text-blue-600 hover:text-blue-800 underline break-all"
             >
-              <X className="h-4 w-4" />
-            </Button>
+              {value}
+            </a>
+          );
+        }
+        
+        if (field === "Website") {
+          return (
+            <a 
+              href={value} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-blue-600 hover:text-blue-800 underline break-all"
+            >
+              {value}
+            </a>
+          );
+        }
+        
+        return <div className="text-slate-600 break-words">{value}</div>;
+      },
+    },
+  ];
+
+  // Column definitions for text area content (full width)
+  const textAreaColumns: ColumnDef<{field: string; value: string}>[] = [
+    {
+      accessorKey: "field",
+      header: "Field",
+      cell: ({ row }) => (
+        <div className="font-medium text-slate-700 min-w-[120px]">
+          {row.getValue("field")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "value",
+      header: "Content",
+      cell: ({ row }) => {
+        const value = row.getValue("value") as string;
+        return (
+          <div className="text-slate-600 whitespace-pre-wrap break-words max-w-full">
+            {value}
           </div>
+        );
+      },
+    },
+  ];
 
-          {/* Form Fields - Read Only */}
-          <div className="space-y-6">
-            {/* Basic Information */}
-            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-3 mb-6">Basic Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Resort Name</Label>
-                <Input
-                  value={resort.resortName}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Slug</Label>
-                <Input
-                  value={resort.slug}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Contact Person Name</Label>
-                <Input
-                  value={resort.contactPersonName}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Contact Number</Label>
-                <Input
-                  value={resort.contactNumber}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Email</Label>
-                <Input
-                  value={resort.email}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Website</Label>
-                <Input
-                  value={resort.website}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Support Number</Label>
-                <Input
-                  value={resort.supportNumber}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Room ID Prefix</Label>
-                <Input
-                  value={resort.roomIdPrefix}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Resort Logo</Label>
-                {resort.logo ? (
-                  <div className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50">
-                    <img 
-                      src={resort.logo} 
-                      alt="Resort Logo" 
-                      className="max-w-32 max-h-32 object-contain mx-auto"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 text-center">
-                    No logo uploaded
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Address Information */}
-            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-3 mb-6">Address Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Address Line 1</Label>
-                <Input
-                  value={resort.addressLine1}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Address Line 2</Label>
-                <Input
-                  value={resort.addressLine2}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">City / District</Label>
-                <Input
-                  value={resort.cityDistrict}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">State / Province</Label>
-                <Input
-                  value={resort.stateProvince}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Postal Code</Label>
-                <Input
-                  value={resort.postalCode}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Country</Label>
-                <Input
-                  value={resort.country}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-            </div>
-
-            {/* Food Information */}
-            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-3 mb-6">Food Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Food Providing</Label>
-                <Input
-                  value={resort.foodProviding}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Extra Guest Charges</Label>
-                <Input
-                  value={resort.extraGuestCharges}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Food Details</Label>
-                <Textarea
-                  value={resort.foodDetails}
-                  readOnly
-                  rows={3}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50 resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Payment Information */}
-            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-3 mb-6">Payment Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">UPI ID</Label>
-                <Input
-                  value={resort.upiId}
-                  readOnly
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">QR Code</Label>
-                {resort.qrFile ? (
-                  <div className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50">
-                    <img 
-                      src={resort.qrFile} 
-                      alt="QR Code" 
-                      className="max-w-32 max-h-32 object-contain mx-auto"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 text-center">
-                    No QR code uploaded
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Terms and Conditions */}
-            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-3 mb-6">Terms & Conditions</h3>
-            <div className="grid grid-cols-1 gap-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">Terms and Conditions</Label>
-                <Textarea
-                  value={resort.termsAndConditions}
-                  readOnly
-                  rows={5}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50 resize-none"
-                />
-              </div>
-            </div>
+  return (
+    <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-3/4 lg:w-1/2 bg-white shadow-xl overflow-y-auto border-l border-slate-200">
+      <div className="p-4 sm:p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Resort Details</h2>
+            <p className="text-sm text-slate-600">View resort information</p>
           </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onClose}
+            className="p-2"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-6">
+          <SectionHeader title="Basic Information" />
+          <DataTable columns={infoColumns} data={basicInfoData} />
+          
+          {/* Logo Section */}
+          {resort.logo && (
+            <div className="flex flex-col space-y-2">
+              <h4 className="text-sm font-medium text-slate-700">Resort Logo</h4>
+              <div className="border border-slate-300 rounded-lg p-4 bg-slate-50 w-fit">
+                <img
+                  src={resort.logo}
+                  alt="Resort Logo"
+                  className="max-w-32 max-h-32 object-contain"
+                />
+              </div>
+            </div>
+          )}
+
+          <SectionHeader title="Address Information" />
+          <DataTable columns={infoColumns} data={addressData} />
+
+          <SectionHeader title="Food Information" />
+          <DataTable columns={infoColumns} data={foodData} />
+          <DataTable columns={textAreaColumns} data={foodDetailsData} />
+
+          <SectionHeader title="Payment Information" />
+          <DataTable columns={infoColumns} data={paymentData} />
+          
+          {/* QR Code Section */}
+          {resort.qrFile && (
+            <div className="flex flex-col space-y-2">
+              <h4 className="text-sm font-medium text-slate-700">QR Code</h4>
+              <div className="border border-slate-300 rounded-lg p-4 bg-slate-50 w-fit">
+                <img
+                  src={resort.qrFile}
+                  alt="QR Code"
+                  className="max-w-32 max-h-32 object-contain"
+                />
+              </div>
+            </div>
+          )}
+
+          <SectionHeader title="Terms & Conditions" />
+          <DataTable columns={textAreaColumns} data={termsData} />
         </div>
       </div>
     </div>
@@ -293,3 +223,51 @@ const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) 
 };
 
 export default ResortDetailPanel;
+
+const SectionHeader = ({ title }: { title: string }) => (
+  <h3 className="text-lg sm:text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">
+    {title}
+  </h3>
+);
+
+const DataTable = ({ columns, data }: { columns: ColumnDef<any>[]; data: any[] }) => {
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+      <table className="min-w-full text-sm">
+        <thead className="bg-slate-50 border-b border-slate-200">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th key={header.id} className="px-3 py-3 text-left font-medium text-slate-700">
+                  {flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {table.getRowModel().rows.map((row, index) => (
+            <tr 
+              key={row.id} 
+              className={`hover:bg-slate-50 transition-colors ${
+                index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
+              }`}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <td key={cell.id} className="px-3 py-3 align-top">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
