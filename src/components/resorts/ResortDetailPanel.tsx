@@ -1,11 +1,14 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {flexRender,getCoreRowModel,useReactTable, type ColumnDef} from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+} from "@tanstack/react-table";
 
 interface ResortDetailData {
-  id?: string;
   resortName: string;
-  slug: string;
   contactPersonName: string;
   contactNumber: string;
   email: string;
@@ -17,9 +20,6 @@ interface ResortDetailData {
   country: string;
   logo?: string | null;
   website: string;
-  termsAndConditions: string;
-  upiId: string;
-  qrFile?: string | null;
   foodProviding: string;
   foodDetails: string;
   roomIdPrefix: string;
@@ -37,10 +37,8 @@ interface ResortDetailPanelProps {
 const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) => {
   if (!isOpen) return null;
 
-  // Basic Information Data
   const basicInfoData = [
     { field: "Resort Name", value: resort.resortName },
-    { field: "Slug", value: resort.slug },
     { field: "Contact Person Name", value: resort.contactPersonName },
     { field: "Contact Number", value: resort.contactNumber },
     { field: "Email", value: resort.email },
@@ -49,7 +47,6 @@ const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) 
     { field: "Room ID Prefix", value: resort.roomIdPrefix },
   ];
 
-  // Address Information Data
   const addressData = [
     { field: "Address Line 1", value: resort.addressLine1 },
     { field: "Address Line 2", value: resort.addressLine2 },
@@ -59,29 +56,16 @@ const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) 
     { field: "Country", value: resort.country },
   ];
 
-  // Food Information Data
   const foodData = [
     { field: "Food Providing", value: resort.foodProviding },
     { field: "Extra Guest Charges", value: resort.extraGuestCharges },
   ];
 
-  // Food Details Data (separate for textarea)
   const foodDetailsData = [
     { field: "Food Details", value: resort.foodDetails },
   ];
 
-  // Payment Information Data
-  const paymentData = [
-    { field: "UPI ID", value: resort.upiId },
-  ];
-
-  // Terms Data
-  const termsData = [
-    { field: "Terms & Conditions", value: resort.termsAndConditions },
-  ];
-
-  // Column definitions for standard information tables
-  const infoColumns: ColumnDef<{field: string; value: string}>[] = [
+  const infoColumns: ColumnDef<{ field: string; value: string }>[] = [
     {
       accessorKey: "field",
       header: "Field",
@@ -97,38 +81,37 @@ const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) 
       cell: ({ row }) => {
         const value = row.getValue("value") as string;
         const field = row.getValue("field") as string;
-        
+
         if (field === "Email") {
           return (
-            <a 
-              href={`mailto:${value}`} 
+            <a
+              href={`mailto:${value}`}
               className="text-blue-600 hover:text-blue-800 underline break-all"
             >
               {value}
             </a>
           );
         }
-        
+
         if (field === "Website") {
           return (
-            <a 
-              href={value} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-800 underline break-all"
             >
               {value}
             </a>
           );
         }
-        
+
         return <div className="text-slate-600 break-words">{value}</div>;
       },
     },
   ];
 
-  // Column definitions for text area content (full width)
-  const textAreaColumns: ColumnDef<{field: string; value: string}>[] = [
+  const textAreaColumns: ColumnDef<{ field: string; value: string }>[] = [
     {
       accessorKey: "field",
       header: "Field",
@@ -155,28 +138,20 @@ const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) 
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-3/4 lg:w-1/2 bg-white shadow-xl overflow-y-auto border-l border-slate-200">
       <div className="p-4 sm:p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Resort Details</h2>
             <p className="text-sm text-slate-600">View resort information</p>
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onClose}
-            className="p-2"
-          >
+          <Button variant="outline" size="icon" onClick={onClose} className="p-2">
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Content */}
         <div className="space-y-6">
           <SectionHeader title="Basic Information" />
           <DataTable columns={infoColumns} data={basicInfoData} />
-          
-          {/* Logo Section */}
+
           {resort.logo && (
             <div className="flex flex-col space-y-2">
               <h4 className="text-sm font-medium text-slate-700">Resort Logo</h4>
@@ -196,26 +171,6 @@ const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) 
           <SectionHeader title="Food Information" />
           <DataTable columns={infoColumns} data={foodData} />
           <DataTable columns={textAreaColumns} data={foodDetailsData} />
-
-          <SectionHeader title="Payment Information" />
-          <DataTable columns={infoColumns} data={paymentData} />
-          
-          {/* QR Code Section */}
-          {resort.qrFile && (
-            <div className="flex flex-col space-y-2">
-              <h4 className="text-sm font-medium text-slate-700">QR Code</h4>
-              <div className="border border-slate-300 rounded-lg p-4 bg-slate-50 w-fit">
-                <img
-                  src={resort.qrFile}
-                  alt="QR Code"
-                  className="max-w-32 max-h-32 object-contain"
-                />
-              </div>
-            </div>
-          )}
-
-          <SectionHeader title="Terms & Conditions" />
-          <DataTable columns={textAreaColumns} data={termsData} />
         </div>
       </div>
     </div>
@@ -230,7 +185,13 @@ const SectionHeader = ({ title }: { title: string }) => (
   </h3>
 );
 
-const DataTable = ({ columns, data }: { columns: ColumnDef<any>[]; data: any[] }) => {
+const DataTable = ({
+  columns,
+  data,
+}: {
+  columns: ColumnDef<any>[];
+  data: any[];
+}) => {
   const table = useReactTable({
     data,
     columns,
@@ -253,10 +214,10 @@ const DataTable = ({ columns, data }: { columns: ColumnDef<any>[]; data: any[] }
         </thead>
         <tbody className="divide-y divide-slate-100">
           {table.getRowModel().rows.map((row, index) => (
-            <tr 
-              key={row.id} 
+            <tr
+              key={row.id}
               className={`hover:bg-slate-50 transition-colors ${
-                index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
+                index % 2 === 0 ? "bg-white" : "bg-slate-25"
               }`}
             >
               {row.getVisibleCells().map((cell) => (

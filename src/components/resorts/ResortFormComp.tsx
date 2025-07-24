@@ -9,7 +9,7 @@ import { Upload } from "lucide-react";
 
 interface ResortFormData {
   resortName: string;
-  slug: string;
+  // slug: string;
   contactPersonName: string;
   contactNumber: string;
   email: string;
@@ -21,9 +21,6 @@ interface ResortFormData {
   country: string;
   logo: File | null;
   website: string;
-  termsAndConditions: string;
-  upiId: string;
-  qrFile: File | null;
   foodProviding: string;
   foodDetails: string;
   roomIdPrefix: string;
@@ -34,7 +31,7 @@ interface ResortFormData {
 const ResortFormComp = () => {
   const [formData, setFormData] = useState<ResortFormData>({
     resortName: "",
-    slug: "",
+    // slug: "",
     contactPersonName: "",
     contactNumber: "",
     email: "",
@@ -46,9 +43,6 @@ const ResortFormComp = () => {
     country: "",
     logo: null,
     website: "",
-    termsAndConditions: "",
-    upiId: "",
-    qrFile: null,
     foodProviding: "",
     foodDetails: "",
     roomIdPrefix: "",
@@ -114,7 +108,7 @@ const ResortFormComp = () => {
   const handleReset = () => {
     setFormData({
       resortName: "",
-      slug: "",
+      // slug: "",
       contactPersonName: "",
       contactNumber: "",
       email: "",
@@ -126,9 +120,6 @@ const ResortFormComp = () => {
       country: "",
       logo: null,
       website: "",
-      termsAndConditions: "",
-      upiId: "",
-      qrFile: null,
       foodProviding: "",
       foodDetails: "",
       roomIdPrefix: "",
@@ -138,7 +129,7 @@ const ResortFormComp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-8">
+    <div className="min-h-screen p-8">
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="mb-8">
@@ -170,7 +161,7 @@ const ResortFormComp = () => {
             </div>
 
             {/* Slug */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="slug" className="text-sm font-medium text-slate-700">
                 Slug *
               </Label>
@@ -184,7 +175,7 @@ const ResortFormComp = () => {
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors bg-slate-50"
                 required
               />
-            </div>
+            </div> */}
 
             {/* Contact Person Name */}
             <div className="space-y-2">
@@ -422,59 +413,6 @@ const ResortFormComp = () => {
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors bg-slate-50"
               />
-            </div>
-          </div>
-
-          {/* Terms and Conditions */}
-          <div className="space-y-2">
-            <Label htmlFor="termsAndConditions" className="text-sm font-medium text-slate-700">
-              Terms and Conditions for Invoice
-            </Label>
-            <Textarea
-              id="termsAndConditions"
-              name="termsAndConditions"
-              placeholder="Enter terms and conditions"
-              value={formData.termsAndConditions}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors bg-slate-50 min-h-24"
-            />
-          </div>
-
-          {/* Payment Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {/* UPI ID */}
-            <div className="space-y-2">
-              <Label htmlFor="upiId" className="text-sm font-medium text-slate-700">
-                UPI ID
-              </Label>
-              <Input
-                id="upiId"
-                name="upiId"
-                type="text"
-                placeholder="Enter UPI ID"
-                value={formData.upiId}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors bg-slate-50"
-              />
-            </div>
-
-            {/* QR File Upload */}
-            <div className="space-y-2 lg:col-span-2">
-              <Label htmlFor="qrFile" className="text-sm font-medium text-slate-700">
-                QR Code File
-              </Label>
-              <div className="relative">
-                <Upload className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <Input
-                  id="qrFile"
-                  name="qrFile"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, 'qrFile')}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors bg-slate-50"
-                  placeholder="Upload QR code file"
-                />
-              </div>
             </div>
           </div>
 

@@ -60,7 +60,7 @@ export default function AddReservationForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-8">
+    <div className="min-h-screen p-8">
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="mb-8">

@@ -6,6 +6,7 @@ const Layout = lazy(() => import('./components/shared/Layout'))
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const ReportPage = lazy(() => import("./pages/dashboard/ReportPage"));
 const AddRoomPage = lazy(() => import("./pages/rooms/AddRoomPage"));
+const AllRoomsPage = lazy(() => import("./pages/rooms/AllRoomsPage"));
 const AddGuestPage = lazy(() => import("./pages/guests/AddGuestPage"));
 const AllGuestsPage = lazy(() => import("./pages/guests/AllGuestsPage"));
 const AddResortsPage = lazy(() => import("./pages/resorts/AddResortsPage"));
@@ -41,6 +42,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route path="/dashboard/report" element={<ReportPage />} />
           <Route path="/rooms/add" element={<AddRoomPage />} />
+          <Route path="/rooms/all" element={<AllRoomsPage/>} />
           <Route path="/guests/add" element={<AddGuestPage />} />
           <Route path="/guests/all" element={<AllGuestsPage />} />
           <Route path="/resorts/add" element={<AddResortsPage />} />

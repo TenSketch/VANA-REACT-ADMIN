@@ -1,8 +1,11 @@
 
+import ReservationTable from "@/components/reservation/ReservationTable";
 
 const AllReservationPage = () => {
   return (
-    <div>AllReservationPage</div>
+    <div>
+      <ReservationTable/>
+    </div>
   )
 }
 

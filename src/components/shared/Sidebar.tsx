@@ -15,6 +15,7 @@ import {
   Globe,
   Wifi,
   BookOpen,
+  BedDouble,
 } from "lucide-react";
 import {
   Collapsible,
@@ -81,6 +82,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       icon: Bed,
       children: [
         { label: "Add Room", path: "/rooms/add", icon: Plus },
+        { label: "All Room", path: "/rooms/all", icon: BedDouble },
+        
       ],
     },
     {
