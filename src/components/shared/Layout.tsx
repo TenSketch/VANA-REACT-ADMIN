@@ -16,20 +16,18 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <Navbar onMenuClick={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       
-      <div className="flex flex-1 min-h-0">
-        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-        
-        {/* Main content */}
-        <main className="flex-1 transition-all duration-300 flex flex-col min-h-0">
-          <div className="flex-1 p-4">
-            <Outlet />
-          </div>
-          <Footer />
-        </main>
-      </div>
+      {/* Main content with proper spacing */}
+      <main className="pt-16 lg:pl-64 pb-16 min-h-screen">
+        <div className="h-full p-4 overflow-y-auto">
+          <Outlet />
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 };
