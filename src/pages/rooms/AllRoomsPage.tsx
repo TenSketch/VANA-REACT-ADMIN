@@ -1,6 +1,7 @@
 
 import RoomsTable from "@/components/rooms/AllRoomsTable";
 
+
 const AllRoomsPage = () => {
     return (
         <div>

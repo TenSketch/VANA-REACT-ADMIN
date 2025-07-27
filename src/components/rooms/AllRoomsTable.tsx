@@ -1,20 +1,28 @@
-import { useState, useMemo } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+import DataTable from "datatables.net-react";
+import DT from "datatables.net-dt";
+import "datatables.net-dt/css/dataTables.dataTables.css";
+import 'datatables.net-buttons-dt/css/buttons.dataTables.css';
+import 'datatables.net-buttons';
+import 'datatables.net-buttons/js/buttons.colVis.js'; // required for column control
+import 'datatables.net-columncontrol-dt';
+import 'datatables.net-columncontrol-dt/css/columnControl.dataTables.css';
+
+
+DataTable.use(DT);
 
 interface Room {
   id: string;
-  resort: "Jungle Star" | "Vanavihari";
+  resort: string;
   cottageType: string;
   roomId: string;
   roomName: string;
   roomImage: string;
-  weekDayRate: number;
-  weekEndRate: number;
+  weekdayRate: number;
+  weekendRate: number;
   guests: number;
   extraGuests: number;
-  bedChargeWeekDay: number;
-  bedChargeWeekEnd: number;
+  bedChargeWeekday: number;
+  bedChargeWeekend: number;
 }
 
 const roomsData: Room[] = [
@@ -25,12 +33,12 @@ const roomsData: Room[] = [
     roomId: "JS-101",
     roomName: "Bear",
     roomImage: "/images/rooms/bear.jpg",
-    weekDayRate: 3000,
-    weekEndRate: 3500,
+    weekdayRate: 3000,
+    weekendRate: 3500,
     guests: 2,
     extraGuests: 2,
-    bedChargeWeekDay: 500,
-    bedChargeWeekEnd: 600,
+    bedChargeWeekday: 500,
+    bedChargeWeekend: 600,
   },
   {
     id: "2",
@@ -39,12 +47,12 @@ const roomsData: Room[] = [
     roomId: "JS-102",
     roomName: "Chital",
     roomImage: "/images/rooms/chital.jpg",
-    weekDayRate: 2800,
-    weekEndRate: 3200,
+    weekdayRate: 2800,
+    weekendRate: 3200,
     guests: 2,
     extraGuests: 1,
-    bedChargeWeekDay: 450,
-    bedChargeWeekEnd: 550,
+    bedChargeWeekday: 450,
+    bedChargeWeekend: 550,
   },
   {
     id: "3",
@@ -53,12 +61,12 @@ const roomsData: Room[] = [
     roomId: "VV-201",
     roomName: "Bulbul",
     roomImage: "/images/rooms/bulbul.jpg",
-    weekDayRate: 3500,
-    weekEndRate: 4000,
+    weekdayRate: 3500,
+    weekendRate: 4000,
     guests: 3,
     extraGuests: 2,
-    bedChargeWeekDay: 600,
-    bedChargeWeekEnd: 700,
+    bedChargeWeekday: 600,
+    bedChargeWeekend: 700,
   },
   {
     id: "4",
@@ -67,12 +75,12 @@ const roomsData: Room[] = [
     roomId: "VV-202",
     roomName: "Woodpecker",
     roomImage: "/images/rooms/woodpecker.jpg",
-    weekDayRate: 2500,
-    weekEndRate: 3000,
+    weekdayRate: 2500,
+    weekendRate: 3000,
     guests: 2,
     extraGuests: 1,
-    bedChargeWeekDay: 400,
-    bedChargeWeekEnd: 500,
+    bedChargeWeekday: 400,
+    bedChargeWeekend: 500,
   },
   {
     id: "5",
@@ -81,88 +89,99 @@ const roomsData: Room[] = [
     roomId: "JS-103",
     roomName: "Chousingha",
     roomImage: "/images/rooms/chousingha.jpg",
-    weekDayRate: 3200,
-    weekEndRate: 3700,
+    weekdayRate: 3200,
+    weekendRate: 3700,
     guests: 2,
     extraGuests: 2,
-    bedChargeWeekDay: 550,
-    bedChargeWeekEnd: 650,
+    bedChargeWeekday: 550,
+    bedChargeWeekend: 650,
   },
 ];
 
-const RoomsTable = () => {
-  const [search, setSearch] = useState("");
-
-  const filteredRooms = useMemo(() => {
-    return roomsData.filter((room) => {
-      const term = search.toLowerCase();
-      return (
-        room.resort.toLowerCase().includes(term) ||
-        room.cottageType.toLowerCase().includes(term) ||
-        room.roomId.toLowerCase().includes(term) ||
-        room.roomName.toLowerCase().includes(term)
-      );
-    });
-  }, [search]);
+export default function RoomsTable() {
+  const columns = [
+    { data: "id", title: "ID" },
+    { data: "resort", title: "Resort" },
+    { data: "cottageType", title: "Cottage Type" },
+    { data: "roomId", title: "Room ID" },
+    { data: "roomName", title: "Room Name" },
+    {
+      data: "roomImage",
+      title: "Room Image",
+      render: (data: string, _type: string, row: Room) => 
+        `<img src="${data}" alt="${row.roomName}" style="width: 64px; height: 48px; object-fit: cover; border-radius: 4px;" />`,
+    },
+    { 
+      data: "weekdayRate", 
+      title: "Weekday Rate",
+      render: (data: number) => `₹${data.toLocaleString()}`
+    },
+    { 
+      data: "weekendRate", 
+      title: "Weekend Rate",
+      render: (data: number) => `₹${data.toLocaleString()}`
+    },
+    { data: "guests", title: "Guests" },
+    { data: "extraGuests", title: "Extra Guests" },
+    { 
+      data: "bedChargeWeekday", 
+      title: "Bed Charge (WD)",
+      render: (data: number) => `₹${data.toLocaleString()}`
+    },
+    { 
+      data: "bedChargeWeekend", 
+      title: "Bed Charge (WE)",
+      render: (data: number) => `₹${data.toLocaleString()}`
+    },
+  ];
 
   return (
-    <div className="p-6 w-full">
+    <div className="p-6 w-full overflow-auto">
       <h2 className="text-xl font-semibold text-slate-800 mb-4">Rooms Table</h2>
-
-      <Input
-        type="text"
-        placeholder="Search by resort, cottage type, room ID or room name"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 w-full max-w-md"
-      />
-
-      <div className="rounded-lg border bg-white overflow-auto">
-        <Table className="min-w-[1200px] text-left">
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Resort</TableHead>
-              <TableHead>Cottage Type</TableHead>
-              <TableHead>Room ID</TableHead>
-              <TableHead>Room Name</TableHead>
-              <TableHead>Room Image</TableHead>
-              <TableHead>Weekday Rate</TableHead>
-              <TableHead>Weekend Rate</TableHead>
-              <TableHead>Guests</TableHead>
-              <TableHead>Extra Guests</TableHead>
-              <TableHead>Bed Charge (WD)</TableHead>
-              <TableHead>Bed Charge (WE)</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredRooms.map((room) => (
-              <TableRow key={room.id}>
-                <TableCell>{room.id}</TableCell>
-                <TableCell>{room.resort}</TableCell>
-                <TableCell>{room.cottageType}</TableCell>
-                <TableCell>{room.roomId}</TableCell>
-                <TableCell>{room.roomName}</TableCell>
-                <TableCell>
-                  <img
-                    src={room.roomImage}
-                    alt={room.roomName}
-                    className="w-16 h-12 object-cover rounded"
-                  />
-                </TableCell>
-                <TableCell>₹{room.weekDayRate}</TableCell>
-                <TableCell>₹{room.weekEndRate}</TableCell>
-                <TableCell>{room.guests}</TableCell>
-                <TableCell>{room.extraGuests}</TableCell>
-                <TableCell>₹{room.bedChargeWeekDay}</TableCell>
-                <TableCell>₹{room.bedChargeWeekEnd}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      
+      <DataTable
+        data={roomsData}
+        columns={columns}
+        className="display nowrap"
+        options={{
+          pageLength: 10,
+          lengthMenu: [5, 10, 25, 50, 100],
+          order: [[0, 'asc']],
+          searching: true,
+          paging: true,
+          info: true,
+          dom: 'Bfrtip', // B = Buttons, f = filtering, r = processing, t = table, i = info, p = paging
+          buttons: [
+            {
+              extend: 'colvis',
+              text: 'Column Visibility',
+              collectionLayout: 'fixed two-column',
+            },
+          ],
+          columnControl: ['order', ['orderAsc', 'orderDesc', 'spacer', 'search']],
+          ordering: {
+            indicators: false,
+            handler: false
+          }
+        }}
+      >
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Resort</th>
+            <th>Cottage Type</th>
+            <th>Room ID</th>
+            <th>Room Name</th>
+            <th>Room Image</th>
+            <th>Weekday Rate</th>
+            <th>Weekend Rate</th>
+            <th>Guests</th>
+            <th>Extra Guests</th>
+            <th>Bed Charge (WD)</th>
+            <th>Bed Charge (WE)</th>
+          </tr>
+        </thead>
+      </DataTable>
     </div>
   );
-};
-
-export default RoomsTable;
+}
