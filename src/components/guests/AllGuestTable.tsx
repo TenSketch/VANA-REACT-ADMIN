@@ -6,7 +6,7 @@ import "datatables.net-buttons";
 import "datatables.net-buttons/js/buttons.colVis.js";
 import "datatables.net-columncontrol-dt";
 import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
-
+import GuestData from "./guestdata.json";
 DataTable.use(DT);
 
 interface Guest {
@@ -20,39 +20,7 @@ interface Guest {
   accessToken: string;
 }
 
-const guests: Guest[] = [
-  {
-    id: "G001",
-    fullName: "Arjun Mehta",
-    phone: "+91 9876543210",
-    email: "arjun@example.com",
-    address: "123 Green Street, Hyderabad, Telangana",
-    registrationDate: "2025-07-15",
-    emailVerificationToken: "verify-123",
-    accessToken: "access-abc123",
-  },
-  {
-    id: "G002",
-    fullName: "Priya Reddy",
-    phone: "+91 9001234567",
-    email: "priya@example.com",
-    address: "456 Blue Lane, Vijayawada, AP",
-    registrationDate: "2025-07-16",
-    emailVerificationToken: "verify-456",
-    accessToken: "access-def456",
-  },
-  {
-    id: "G003",
-    fullName: "Vikram Singh",
-    phone: "+91 9810012312",
-    email: "vikram@example.com",
-    address: "789 Sunset Blvd, Bengaluru, Karnataka",
-    registrationDate: "2025-07-17",
-    emailVerificationToken: "verify-789",
-    accessToken: "access-ghi789",
-  },
-  // Add more if needed
-];
+const guests: Guest[] = GuestData;
 
 export default function GuestTable() {
   const columns = [
