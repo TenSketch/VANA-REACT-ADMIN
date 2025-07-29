@@ -1,17 +1,16 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Edit2, Trash2 } from "lucide-react";
+import DataTable from "datatables.net-react";
+import DT from "datatables.net-dt";
+import "datatables.net-dt/css/dataTables.dataTables.css";
+import "datatables.net-buttons-dt/css/buttons.dataTables.css";
+import "datatables.net-buttons";
+import "datatables.net-buttons/js/buttons.colVis.js";
+import "datatables.net-columncontrol-dt";
+import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
+import { useEffect, useRef } from "react";
 
-interface ReservationTable {
+DataTable.use(DT);
+
+interface Reservation {
   id: string;
   fullName: string;
   phone: string;
@@ -34,10 +33,6 @@ interface ReservationTable {
   refundPercent: string;
 }
 
-const ReservationTable = () => {
-  const [search, setSearch] = useState("");
-
-  //sample data
 const reservations = [
   {
     id: "1",
@@ -261,94 +256,108 @@ const reservations = [
   },
 ];
 
+export default function ReservationTable() {
+  const tableRef = useRef(null);
 
-  const filteredReservations = reservations.filter((r) =>
-    r.fullName.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const rowElement = target.closest("tr");
+      if (!rowElement) return;
+      const index = (rowElement as HTMLTableRowElement).rowIndex - 1;
+      const rowData = reservations[index];
+      if (target.closest(".edit-btn")) {
+        console.log("Edit:", rowData);
+      } else if (target.closest(".delete-btn")) {
+        console.log("Delete:", rowData);
+      }
+    };
+
+    const tableNode = tableRef.current;
+    if (tableNode) {
+      (tableNode as HTMLElement).addEventListener("click", handleClick);
+    }
+
+    return () => {
+      if (tableNode) {
+        (tableNode as HTMLElement).removeEventListener("click", handleClick);
+      }
+    };
+  }, []);
+
+  const columns = [
+    { data: "fullName", title: "Full Name" },
+    { data: "phone", title: "Phone" },
+    { data: "email", title: "Email" },
+    { data: "checkIn", title: "Check In" },
+    { data: "checkOut", title: "Check Out" },
+    { data: "guests", title: "Guests" },
+    { data: "children", title: "Children" },
+    { data: "extraGuests", title: "Extra Guests" },
+    { data: "rooms", title: "Rooms" },
+    { data: "totalGuests", title: "Total Guests" },
+    { data: "noOfDays", title: "No. of Days" },
+    { data: "noOfFoods", title: "No. of Foods" },
+    { data: "resort", title: "Resort" },
+    {
+      data: "roomTypes",
+      title: "Room Types",
+      render: (data: string[]) => data.join(", "),
+    },
+    { data: "bookingId", title: "Booking ID" },
+    { data: "status", title: "Status" },
+    { data: "reservationDate", title: "Reservation Date" },
+    { data: "paymentStatus", title: "Payment Status" },
+    { data: "refundPercent", title: "Refund %" },
+    {
+      data: null,
+      title: "Actions",
+      orderable: false,
+      searchable: false,
+      render: () => {
+        return `
+          <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor:pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-icon lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+          </button>
+          <button class="delete-btn" title="Delete" style="border: none; background: none; color: red; cursor:pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        `;
+      },
+    },
+  ];
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="w-full">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-slate-800 mb-2">Guest Reservations</h1>
-          <Input
-            placeholder="Search by name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-sm"
-          />
-        </div>
-
-        <div className="rounded-lg border overflow-x-auto">
-          <Table className="min-w-full text-left">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="px-6">Full Name</TableHead>
-                <TableHead className="px-6">Phone</TableHead>
-                <TableHead className="px-6">Email</TableHead>
-                <TableHead className="px-6">Check In</TableHead>
-                <TableHead className="px-6">Check Out</TableHead>
-                <TableHead className="px-6">Guests</TableHead>
-                <TableHead className="px-6">Children</TableHead>
-                <TableHead className="px-6">Extra Guests</TableHead>
-                <TableHead className="px-6">Rooms</TableHead>
-                <TableHead className="px-6">Total Guests</TableHead>
-                <TableHead className="px-6">No. of Days</TableHead>
-                <TableHead className="px-6">No. of Foods</TableHead>
-                <TableHead className="px-6">Resort</TableHead>
-                <TableHead className="px-6">Room Types</TableHead>
-                <TableHead className="px-6">Booking ID</TableHead>
-                <TableHead className="px-6">Status</TableHead>
-                <TableHead className="px-6">Reservation Date</TableHead>
-                <TableHead className="px-6">Payment Status</TableHead>
-                <TableHead className="px-6">Refund %</TableHead>
-                <TableHead className="px-6">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReservations.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="px-6">{r.fullName}</TableCell>
-                  <TableCell className="px-6">{r.phone}</TableCell>
-                  <TableCell className="px-6">{r.email}</TableCell>
-                  <TableCell className="px-6">{r.checkIn}</TableCell>
-                  <TableCell className="px-6">{r.checkOut}</TableCell>
-                  <TableCell className="px-6">{r.guests}</TableCell>
-                  <TableCell className="px-6">{r.children}</TableCell>
-                  <TableCell className="px-6">{r.extraGuests}</TableCell>
-                  <TableCell className="px-6">{r.rooms}</TableCell>
-                  <TableCell className="px-6">{r.totalGuests}</TableCell>
-                  <TableCell className="px-6">{r.noOfDays}</TableCell>
-                  <TableCell className="px-6">{r.noOfFoods}</TableCell>
-                  <TableCell className="px-6">{r.resort}</TableCell>
-                  <TableCell className="px-6">{r.roomTypes.join(", ")}</TableCell>
-                  <TableCell className="px-6">{r.bookingId}</TableCell>
-                  <TableCell className="px-6">{r.status}</TableCell>
-                  <TableCell className="px-6">{r.reservationDate}</TableCell>
-                  <TableCell className="px-6">{r.paymentStatus}</TableCell>
-                  <TableCell className="px-6">{r.refundPercent}</TableCell>
-                  <TableCell className="px-6">
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+    <div className="p-6 w-full overflow-auto">
+      <h2 className="text-xl font-semibold text-slate-800 mb-4">Guest Reservations</h2>
+      <div ref={tableRef}>
+        <DataTable
+          data={reservations}
+          columns={columns}
+          className="display nowrap"
+          options={{
+            pageLength: 10,
+            lengthMenu: [5, 10, 25, 50, 100],
+            order: [[0, "asc"]],
+            searching: true,
+            paging: true,
+            info: true,
+            dom: "Bfrtip",
+            buttons: [
+              {
+                extend: "colvis",
+                text: "Column Visibility",
+                collectionLayout: "fixed two-column",
+              },
+            ],
+            columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+            ordering: {
+              indicators: false,
+              handler: false,
+            },
+          }}
+        />
       </div>
     </div>
   );
-};
-
-export default ReservationTable;
+}

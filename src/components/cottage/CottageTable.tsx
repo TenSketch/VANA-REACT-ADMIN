@@ -1,40 +1,13 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type SortingState,
-  type ColumnFiltersState,
-} from "@tanstack/react-table";
-import {
-  Edit2,
-  Trash2,
-  Search,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import DataTable from "datatables.net-react";
+import DT from "datatables.net-dt";
+import "datatables.net-dt/css/dataTables.dataTables.css";
+import "datatables.net-buttons-dt/css/buttons.dataTables.css";
+import "datatables.net-buttons";
+import "datatables.net-buttons/js/buttons.colVis.js";
+import "datatables.net-columncontrol-dt";
+import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
+
+DataTable.use(DT);
 
 interface CottageType {
   id: string;
@@ -44,284 +17,151 @@ interface CottageType {
   roomAmenities: string[];
 }
 
-const CottageTable = () => {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+const cottageTypes: CottageType[] = [
+  {
+    id: "1",
+    cottageName: "Bison Cottages",
+    resort: "Vanavihari, Maredumilli",
+    description: "Spacious cottage with modern amenities and forest view",
+    roomAmenities: ["Air Conditioning", "Geyser", "Western"],
+  },
+  {
+    id: "2",
+    cottageName: "Permanent Cottage",
+    resort: "Jungle Star, Valamuru",
+    description: "Permanent Cottage at Jungle Start Eco Camp in Valamuru district, AP, offers a unique blend of sturdy construction and eco-conscious design. Built with concrete walls for durability, its distinguishing feature is the roof crafted from thick, waterproof, fireproof, and heat-resistant cloth. This innovative design ensures a comfortable and safe stay amidst the natural surroundings, allowing guests to immerse themselves in the wilderness while enjoying modern comforts.",
+    roomAmenities: ["Air Conditioning", "Geyser", "Western", "Food"],
+  },
+  {
+    id: "3",
+    cottageName: "Tented Cottage",
+    resort: "Jungle Star, Valamuru",
+    description: "The Tented Cottage at Jungle Start Eco Camp in Valamuru district, AP, offers a charming retreat for nature enthusiasts. Nestled amidst the lush greenery, these cottages feature a sturdy framework draped with weather-resistant canvas tents. Inside, guests can enjoy cozy interiors appointed with comfortable furnishings, providing a rustic yet comfortable accommodation experience. With the sounds of nature as your soundtrack and the fresh breeze flowing through the tent flaps, the Tented Cottages offer a serene escape from the hustle and bustle of everyday life.",
+    roomAmenities: ["Western", "Air Coniditioning", "Geyser","Food"],
+  },
+  {
+    id: "4",
+    cottageName: "Vihari",
+    resort: "Vanavihari, Maredumilli",
+    description: "The 'Vihari' Cottage at Vanavihari, Maredumilli district, AP, offers a premium stay with two rooms, Pamuleru and Sokuleru, in a single building. Elegantly designed and nestled in nature, each room provides a luxurious yet serene retreat for guests seeking tranquillity and comfort amidst the lush wilderness.",
+    roomAmenities: ["Air Conditioning", "Geyser", "Western"],
+  },
+  {
+    id: "5",
+    cottageName: "Deluxe Rooms",
+    resort: "Vanavihari, Maredumilli",
+    description: "The Deluxe Cottage at Vanavihari, situated behind the reception, features three rooms named Narmada, Bahuda, and Tapathi, all at an affordable price of 2500 rupees. This cozy accommodation offers a perfect blend of comfort and economy, allowing guests to enjoy a tranquil stay amidst the natural beauty of the Maredumilli district, AP.",
+    roomAmenities: ["Air Conditioning", "Geyser", "Western"],
+  },
+  {
+    id: "6",
+    cottageName: "Wooden Cottages",
+    resort: "Vanavihari, Maredumilli",
+    description: "The Wooden Cottages at Vanavihari offer a rustic yet charming retreat in the heart of Maredumilli district, AP. Nestled amidst the lush greenery, these cottages boast traditional wooden construction, exuding warmth and authenticity. Each cottage is thoughtfully designed to provide a cozy and comfortable stay, allowing guests to immerse themselves in the serene ambiance of the forest. With modern amenities seamlessly integrated into the rustic charm, the Wooden Cottages offer a delightful blend of nature and comfort for a truly memorable getaway.",
+    roomAmenities: ["Air Conditioning", "Geyser", "Western"],
+  },
+  {
+    id: "7",
+    cottageName: "Pre-Fabricated Cottages",
+    resort: "Vanavihari, Maredumilli",
+    description: "The Pre-Fabricated Cottages at Vanavihari offer a contemporary accommodation option amidst the natural beauty of Maredumilli district, AP. These cottages feature modern, modular construction, providing a sleek and comfortable retreat for guests. Each cottage is designed with efficiency and sustainability in mind, offering a cozy yet eco-friendly space to unwind. With thoughtful amenities and stylish interiors, the prefabricated cottages offer a refreshing stay, allowing guests to relax and recharge in harmony with nature.",
+    roomAmenities: ["Air Conditioning", "Geyser", "Western"],
+  },
+  {
+    id: "8",
+    cottageName: "Hill Top Guest House",
+    resort: "Vanavihari, Maredumilli",
+    description: "Perched atop the serene hills of Vanavihari resort in Maredumilli district, AP, the Hill Top Guest House offers breathtaking panoramic views of the surrounding landscape. This exclusive accommodation boasts spacious and elegantly appointed rooms, providing a luxurious retreat for discerning guests. With its secluded location and tranquil ambience, the Hill Top Guest House provides the perfect setting for relaxation and rejuvenation amidst nature&#39;s splendour. Whether enjoying a quiet moment on the private balcony or exploring the nearby trails, guests are sure to experience an unforgettable stay in this idyllic mountain retreat.",
+    roomAmenities: ["Air Conditioning", "Geyser", "Western"],
+  },
+];
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setGlobalFilter(searchInput);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
-
-  const cottageTypes: CottageType[] = useMemo(() => [
+export default function CottageDataTable() {
+  const columns = [
+    { data: "cottageName", title: "Cottage Name" },
     {
-      id: "1",
-      cottageName: "Deluxe Cottage",
-      resort: "Jungle Star, Valamuru",
-      description: "Spacious cottage with modern amenities and forest view",
-      roomAmenities: ["Air Conditioning", "WiFi", "Television", "Mini Bar"],
+      data: "resort",
+      title: "Resort",
+      render: (data: string) => data.split(",")[0],
     },
     {
-      id: "2",
-      cottageName: "Premium Villa",
-      resort: "Vanavihari, Maredumilli",
-      description: "Luxury villa with private balcony and eco-friendly features",
-      roomAmenities: ["Air Conditioning", "WiFi", "Balcony", "Safe Deposit Box"],
+      data: "description",
+      title: "Description",
+      render: (data: string) =>
+        `<div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data}">${data}</div>`,
     },
     {
-      id: "3",
-      cottageName: "Standard Room",
-      resort: "Jungle Star, Valamuru",
-      description: "Comfortable accommodation with basic amenities",
-      roomAmenities: ["WiFi", "Television", "Hair Dryer"],
-    },
-    {
-      id: "4",
-      cottageName: "Eco Cottage",
-      resort: "Vanavihari, Maredumilli",
-      description: "Environment-friendly cottage with natural materials",
-      roomAmenities: ["WiFi", "Balcony", "Room Service"],
-    },
-  ], []);
-
-  const handleEdit = useCallback((cottageType: CottageType) => {
-    console.log("Edit:", cottageType);
-  }, []);
-
-  const handleDelete = useCallback((cottageType: CottageType) => {
-    console.log("Delete:", cottageType);
-  }, []);
-
-  const columns: ColumnDef<CottageType>[] = useMemo(() => [
-    {
-      accessorKey: "cottageName",
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="h-auto p-0 text-xs font-medium">
-          Name <ArrowUpDown className="ml-1 h-3 w-3" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="font-medium text-slate-800 text-xs sm:text-sm truncate">
-          {row.getValue("cottageName")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "resort",
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="h-auto p-0 text-xs font-medium">
-          Resort <ArrowUpDown className="ml-1 h-3 w-3" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="text-slate-600 text-xs sm:text-sm truncate">
-          {(row.getValue("resort") as string).split(",")[0]}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "description",
-      header: "Description",
-      cell: ({ row }) => (
-        <div className="text-slate-600 text-xs sm:text-sm line-clamp-2">
-          {row.getValue("description")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "roomAmenities",
-      header: "Amenities",
-      cell: ({ row }) => {
-        const amenities = row.getValue("roomAmenities") as string[];
-        return (
-          <div className="flex flex-wrap gap-0.5">
-            {amenities.slice(0, 1).map((item, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-1 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[60px]"
-              >
-                {item}
-              </span>
-            ))}
-            {amenities.length > 1 && (
-              <span
-                className="inline-flex items-center px-1 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-slate-100 text-slate-600"
-                title={amenities.join(", ")}
-              >
-                +{amenities.length - 1}
-              </span>
-            )}
+      data: "roomAmenities",
+      title: "Amenities",
+      render: (data: string[]) => {
+        return `
+          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+            ${data
+              .map(
+                (item) => `
+                <span style="
+                  background: #dbeafe;
+                  color: #1e3a8a;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                  font-size: 10px;
+                  white-space: nowrap;
+                  max-width: 100px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                ">
+                  ${item}
+                </span>`
+              )
+              .join("")}
           </div>
-        );
+        `;
       },
     },
+
     {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const cottage = row.original;
-        return (
-          <div className="flex gap-0.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEdit(cottage)}
-              className="h-5 w-5 p-0"
-            >
-              <Edit2 className="h-2.5 w-2.5 text-slate-600" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDelete(cottage)}
-              className="h-5 w-5 p-0 border-red-300 text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="h-2.5 w-2.5" />
-            </Button>
-          </div>
-        );
+      data: null,
+      title: "Actions",
+      orderable: false,
+      searchable: false,
+      render: function (_: any, _type: any, row: CottageType) {
+        return `
+          <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+          </button>
+          <button class="delete-btn" title="Delete" style="border: none; background: none; color: red; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        `;
       },
     },
-  ], [handleEdit, handleDelete]);
-
-  const table = useReactTable({
-    data: cottageTypes,
-    columns,
-    state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-    },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    globalFilterFn: "includesString",
-    initialState: {
-      pagination: { pageSize: 8 },
-    },
-    enableColumnFilters: true,
-    enableGlobalFilter: true,
-    autoResetPageIndex: false,
-    autoResetExpanded: false,
-  });
-
-  const handleGlobalFilterChange = useCallback((value: string) => {
-    setSearchInput(value);
-  }, []);
-
-  const handleResortFilterChange = useCallback((value: string) => {
-    table.getColumn("resort")?.setFilterValue(value === "all" ? "" : value);
-  }, [table]);
+  ];
 
   return (
-    <div className="w-full min-h-screen p-4 bg-slate-50">
-      <div className="space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-slate-800">Cottage Types</h2>
-          <p className="text-sm text-slate-600">Manage cottages across all resorts</p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
-            <Input
-              placeholder="Search..."
-              className="pl-9"
-              value={searchInput}
-              onChange={(e) => handleGlobalFilterChange(e.target.value)}
-            />
-          </div>
-
-          <Select
-            value={(table.getColumn("resort")?.getFilterValue() as string) ?? ""}
-            onValueChange={handleResortFilterChange}
-          >
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter resort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Resorts</SelectItem>
-              <SelectItem value="Jungle Star, Valamuru">Jungle Star</SelectItem>
-              <SelectItem value="Vanavihari, Maredumilli">Vanavihari</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button>Add New</Button>
-        </div>
-
-        <div className="overflow-x-auto border rounded-lg bg-white">
-          <Table className="w-full">
-            <TableHeader>
-              {table.getHeaderGroups().map((group) => (
-                <TableRow key={group.id}>
-                  {group.headers.map((header) => (
-                    <TableHead key={header.id} className="text-left text-xs font-semibold text-slate-700">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-left text-sm">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center py-6 text-slate-500">
-                    No cottage types found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        <div className="flex justify-between text-sm text-slate-600">
-          <div>
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Prev
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className="p-6 w-full overflow-auto">
+      <h2 className="text-xl font-semibold text-slate-800 mb-4">Cottage Types</h2>
+      <DataTable
+        data={cottageTypes}
+        columns={columns}
+        className="display nowrap"
+        options={{
+          pageLength: 10,
+          lengthMenu: [5, 10, 25, 50, 100],
+          order: [[0, "asc"]],
+          searching: true,
+          paging: true,
+          info: true,
+          dom: "Bfrtip",
+          buttons: [
+            {
+              extend: "colvis",
+              text: "Column Visibility",
+              collectionLayout: "fixed two-column",
+            },
+          ],
+          columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+        }}
+      />
     </div>
   );
-};
-
-export default CottageTable;
+}
