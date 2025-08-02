@@ -5,6 +5,10 @@ import LoadingScreen from "./components/shared/LoadingScreen";
 const Layout = lazy(() => import('./components/shared/Layout'))
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const ReportPage = lazy(() => import("./pages/dashboard/ReportPage"));
+const VanaReportPage = lazy(() => import("./pages/DailyOccupancyReport/VahavihariReport"));
+const JunglestarReportPage = lazy(() => import("./pages/DailyOccupancyReport/JungleStarReport"));
+const CheckInPage = lazy(() => import("./pages/frontdesk/CheckIn"));
+const CheckOutPage = lazy(() => import("./pages/frontdesk/CheckOut"));
 const AddRoomPage = lazy(() => import("./pages/rooms/AddRoomPage"));
 const AllRoomsPage = lazy(() => import("./pages/rooms/AllRoomsPage"));
 const AddGuestPage = lazy(() => import("./pages/guests/AddGuestPage"));
@@ -41,6 +45,10 @@ function App() {
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/" element={<Layout />}>
           <Route path="/dashboard/report" element={<ReportPage />} />
+          <Route path="/dailyoccupanyreport/vanavihari" element={<VanaReportPage/>} />
+          <Route path="/dailyoccupanyreport/junglestar" element={<JunglestarReportPage/>} />
+          <Route path="/frontdesk/checkin" element={<CheckInPage/>} />
+          <Route path="/frontdesk/checkout" element={<CheckOutPage/>} />
           <Route path="/rooms/add" element={<AddRoomPage />} />
           <Route path="/rooms/all" element={<AllRoomsPage/>} />
           <Route path="/guests/add" element={<AddGuestPage />} />

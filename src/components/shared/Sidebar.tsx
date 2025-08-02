@@ -16,6 +16,11 @@ import {
   Wifi,
   BookOpen,
   BedDouble,
+  MonitorCheck,
+  ArrowRightFromLine,
+  ArrowLeftFromLine,
+  ClipboardMinus,
+  ClipboardCheck,
 } from "lucide-react";
 import {
   Collapsible,
@@ -48,6 +53,24 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       label: "Dashboard",
       icon: Home,
       path: "/dashboard/report",
+    },
+    {
+      id: "dailyoccupancy",
+      label: "Daily Occupancy Report",
+      icon: ClipboardMinus,
+      children: [
+        { label: "VanaVihari", path: "/dailyoccupanyreport/vanavihari", icon: ClipboardCheck},
+        { label: "JungleStar", path: "/dailyoccupanyreport/junglestar", icon: ClipboardCheck},
+      ],
+    },
+    {
+      id: "frontdesk",
+      label: "Frontdesk",
+      icon: MonitorCheck,
+      children: [
+        { label: "Check In", path: "/frontdesk/checkin", icon: ArrowRightFromLine},
+        { label: "Check Out", path: "/frontdesk/checkout", icon: ArrowLeftFromLine},
+      ],
     },
     {
       id: "resorts",

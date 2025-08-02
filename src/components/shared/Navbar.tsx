@@ -1,5 +1,5 @@
 
-import { Menu, User, Home, LogOut } from "lucide-react";
+import { Menu, User, Home, LogOut, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,31 +34,37 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
       </div>
 
       {/* Right side - User dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4" />
-            </div>
-            <span className="hidden md:block">Account</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            My Account
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Home className="mr-2 h-4 w-4" />
-            Home
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-red-600">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center space-x-2">
+        <Button variant="ghost" size="icon">
+          <Bell className="h-7 w-7" />
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4" />
+              </div>
+              <span className="hidden md:block">Account</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              My Account
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Home className="mr-2 h-4 w-4" />
+              Home
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-red-600">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </nav>
   );
 };

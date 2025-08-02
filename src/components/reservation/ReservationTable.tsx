@@ -40,6 +40,51 @@ export default function ReservationTable() {
   const tableRef = useRef(null);
 
   useEffect(() => {
+    // Add custom CSS to fix dropdown positioning
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .dt-button-collection {
+        position: absolute !important;
+        z-index: 9999 !important;
+        background: white !important;
+        border: 1px solid #ddd !important;
+        border-radius: 4px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+      }
+      .dataTables_wrapper .dt-buttons {
+        position: relative;
+      }
+      .dataTables_wrapper {
+        position: relative;
+      }
+      .dt-button-collection.dropdown-menu {
+        transform: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Add scroll event listener to close dropdown on scroll
+    const handleScroll = () => {
+      const collection = document.querySelector('.dt-button-collection');
+      if (collection && (collection as HTMLElement).style.display !== 'none') {
+        (collection as HTMLElement).style.display = 'none';
+      }
+    };
+
+    const scrollContainer = document.querySelector('.overflow-auto');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      document.head.removeChild(style);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const handleClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       const rowElement = target.closest("tr");
@@ -99,19 +144,17 @@ export default function ReservationTable() {
           <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor:pointer">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-icon lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
           </button>
-          <button class="delete-btn" title="Delete" style="border: none; background: none; color: red; cursor:pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
         `;
       },
     },
   ];
 
   return (
-    <div className="p-6 w-full overflow-auto">
+    <div className="p-6 w-full">
       <h2 className="text-xl font-semibold text-slate-800 mb-4">Guest Reservations</h2>
-      <div ref={tableRef}>
-        <DataTable
+      <div className="overflow-auto" style={{ position: 'relative' }}>
+        <div ref={tableRef} style={{ position: 'relative', minWidth: 'max-content' }}>
+          <DataTable
           data={reservations}
           columns={columns}
           className="display nowrap"
@@ -128,6 +171,43 @@ export default function ReservationTable() {
                 extend: "colvis",
                 text: "Column Visibility",
                 collectionLayout: "fixed two-column",
+                dropup: false,
+                fade: 0,
+                className: "btn-colvis",
+                init: function(_api: any, node: any, _config: any) {
+                  // Ensure dropdown appears below button
+                  node.on('click', function() {
+                    setTimeout(() => {
+                      const collection = document.querySelector('.dt-button-collection');
+                      if (collection) {
+                        const button = node[0];
+                        const buttonRect = button.getBoundingClientRect();
+                        const scrollContainer = button.closest('.overflow-auto');
+                        const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { left: 0, top: 0 };
+                        
+                        // Calculate position relative to the scroll container
+                        const leftPosition = Math.max(10, buttonRect.left - containerRect.left + (scrollContainer?.scrollLeft || 0));
+                        const topPosition = buttonRect.bottom + 5;
+                        
+                        (collection as HTMLElement).style.position = 'absolute';
+                        (collection as HTMLElement).style.left = leftPosition + 'px';
+                        (collection as HTMLElement).style.top = topPosition + 'px';
+                        (collection as HTMLElement).style.zIndex = '9999';
+                        (collection as HTMLElement).style.maxHeight = '300px';
+                        (collection as HTMLElement).style.overflowY = 'auto';
+                        
+                        // Ensure the dropdown is visible within the container
+                        const collectionRect = (collection as HTMLElement).getBoundingClientRect();
+                        const containerRightEdge = containerRect.left + (scrollContainer?.clientWidth || window.innerWidth);
+                        
+                        if (collectionRect.right > containerRightEdge) {
+                          const adjustedLeft = leftPosition - (collectionRect.right - containerRightEdge) - 10;
+                          (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + 'px';
+                        }
+                      }
+                    }, 10);
+                  });
+                }
               },
             ],
             columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
@@ -137,6 +217,7 @@ export default function ReservationTable() {
             },
           }}
         />
+        </div>
       </div>
     </div>
   );
