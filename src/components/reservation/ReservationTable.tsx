@@ -40,11 +40,10 @@ export default function ReservationTable() {
   const tableRef = useRef(null);
 
   useEffect(() => {
-    // Add custom CSS to fix dropdown positioning
     const style = document.createElement('style');
     style.innerHTML = `
       .dt-button-collection {
-        position: absolute !important;
+        position: fixed !important;
         z-index: 9999 !important;
         background: white !important;
         border: 1px solid #ddd !important;
@@ -63,7 +62,6 @@ export default function ReservationTable() {
     `;
     document.head.appendChild(style);
 
-    // Add scroll event listener to close dropdown on scroll
     const handleScroll = () => {
       const collection = document.querySelector('.dt-button-collection');
       if (collection && (collection as HTMLElement).style.display !== 'none') {
@@ -155,68 +153,65 @@ export default function ReservationTable() {
       <div className="overflow-auto" style={{ position: 'relative' }}>
         <div ref={tableRef} style={{ position: 'relative', minWidth: 'max-content' }}>
           <DataTable
-          data={reservations}
-          columns={columns}
-          className="display nowrap"
-          options={{
-            pageLength: 10,
-            lengthMenu: [5, 10, 25, 50, 100],
-            order: [[0, "asc"]],
-            searching: true,
-            paging: true,
-            info: true,
-            dom: "Bfrtip",
-            buttons: [
-              {
-                extend: "colvis",
-                text: "Column Visibility",
-                collectionLayout: "fixed two-column",
-                dropup: false,
-                fade: 0,
-                className: "btn-colvis",
-                init: function(_api: any, node: any, _config: any) {
-                  // Ensure dropdown appears below button
-                  node.on('click', function() {
-                    setTimeout(() => {
-                      const collection = document.querySelector('.dt-button-collection');
-                      if (collection) {
-                        const button = node[0];
-                        const buttonRect = button.getBoundingClientRect();
-                        const scrollContainer = button.closest('.overflow-auto');
-                        const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { left: 0, top: 0 };
-                        
-                        // Calculate position relative to the scroll container
-                        const leftPosition = Math.max(10, buttonRect.left - containerRect.left + (scrollContainer?.scrollLeft || 0));
-                        const topPosition = buttonRect.bottom + 5;
-                        
-                        (collection as HTMLElement).style.position = 'absolute';
-                        (collection as HTMLElement).style.left = leftPosition + 'px';
-                        (collection as HTMLElement).style.top = topPosition + 'px';
-                        (collection as HTMLElement).style.zIndex = '9999';
-                        (collection as HTMLElement).style.maxHeight = '300px';
-                        (collection as HTMLElement).style.overflowY = 'auto';
-                        
-                        // Ensure the dropdown is visible within the container
-                        const collectionRect = (collection as HTMLElement).getBoundingClientRect();
-                        const containerRightEdge = containerRect.left + (scrollContainer?.clientWidth || window.innerWidth);
-                        
-                        if (collectionRect.right > containerRightEdge) {
-                          const adjustedLeft = leftPosition - (collectionRect.right - containerRightEdge) - 10;
-                          (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + 'px';
+            data={reservations}
+            columns={columns}
+            className="display nowrap"
+            options={{
+              pageLength: 10,
+              lengthMenu: [5, 10, 25, 50, 100],
+              order: [[0, "asc"]],
+              searching: true,
+              paging: true,
+              info: true,
+              dom: "Bfrtip",
+              buttons: [
+                {
+                  extend: "colvis",
+                  text: "Column Visibility",
+                  collectionLayout: "fixed two-column",
+                  init: function (_api: any, node: any, _config: any) {
+                    node.on("click", function () {
+                      setTimeout(() => {
+                        const collection = document.querySelector(".dt-button-collection");
+                        if (collection) {
+                          const button = node[0];
+                          const buttonRect = button.getBoundingClientRect();
+
+                          const viewportWidth = window.innerWidth;
+                          const dropdownWidth = (collection as HTMLElement).offsetWidth;
+
+                          let left = buttonRect.left;
+                          let top = buttonRect.bottom + 30;
+
+                          // Adjust if it overflows right
+                          if (left + dropdownWidth > viewportWidth - 10) {
+                            left = viewportWidth - dropdownWidth - 10;
+                          }
+
+                          // Ensure it doesn’t go off the left side
+                          if (left < 10) {
+                            left = 10;
+                          }
+
+                          (collection as HTMLElement).style.position = "fixed";
+                          (collection as HTMLElement).style.left = `${left}px`;
+                          (collection as HTMLElement).style.top = `${top}px`;
+                          (collection as HTMLElement).style.zIndex = "9999";
+                          (collection as HTMLElement).style.maxHeight = "300px";
+                          (collection as HTMLElement).style.overflowY = "auto";
                         }
-                      }
-                    }, 10);
-                  });
-                }
+                      }, 10);
+                    });
+                  },
+                },
+              ],
+              columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+              ordering: {
+                indicators: false,
+                handler: false,
               },
-            ],
-            columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
-            ordering: {
-              indicators: false,
-              handler: false,
-            },
-          }}
-        />
+            }}
+          />
         </div>
       </div>
     </div>

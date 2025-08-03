@@ -1,7 +1,9 @@
+import JungleStarReport from "@/components/dailyoccupancyreport/JungleStarReport";
+
 const JungleStarReportPage = () => {
     return (
         <div>
-            junglestarreportpage
+            <JungleStarReport/>
         </div>
     )
 }

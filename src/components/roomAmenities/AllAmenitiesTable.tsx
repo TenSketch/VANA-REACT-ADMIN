@@ -27,7 +27,7 @@ export default function AllRoomAmenitiesTable() {
     const style = document.createElement("style");
     style.innerHTML = `
       .dt-button-collection {
-        position: absolute !important;
+        position: fixed !important;
         z-index: 9999 !important;
         background: white !important;
         border: 1px solid #ddd !important;
@@ -53,7 +53,7 @@ export default function AllRoomAmenitiesTable() {
       }
     };
 
-    const scrollContainer = document.querySelector(".dt-scroll-wrapper");
+    const scrollContainer = document.querySelector(".overflow-auto");
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll);
     }
@@ -106,10 +106,11 @@ export default function AllRoomAmenitiesTable() {
   ];
 
   return (
-    <div className="p-6 w-full overflow-auto dt-scroll-wrapper">
+    <div className="p-6 w-full">
       <h2 className="text-xl font-semibold text-slate-800 mb-4">Room Amenities</h2>
-      <div ref={tableRef} style={{ position: "relative", minWidth: "max-content" }}>
-        <DataTable
+      <div className="overflow-auto" style={{ position: "relative" }}>
+        <div ref={tableRef} style={{ position: "relative", minWidth: "max-content" }}>
+          <DataTable
           data={amenities}
           columns={columns}
           className="display nowrap"
@@ -133,28 +134,21 @@ export default function AllRoomAmenitiesTable() {
                       if (collection) {
                         const button = node[0];
                         const buttonRect = button.getBoundingClientRect();
-                        const scrollContainer = button.closest(".dt-scroll-wrapper");
-                        const containerRect = scrollContainer
-                          ? scrollContainer.getBoundingClientRect()
-                          : { left: 0, top: 0 };
-
-                        const leftPosition =
-                          Math.max(10, buttonRect.left - containerRect.left + (scrollContainer?.scrollLeft || 0));
-                        const topPosition = buttonRect.bottom + 5;
-
-                        (collection as HTMLElement).style.position = "absolute";
-                        (collection as HTMLElement).style.left = leftPosition + "px";
-                        (collection as HTMLElement).style.top = topPosition + "px";
+                        
+                        // Use fixed positioning relative to viewport
+                        (collection as HTMLElement).style.position = "fixed";
+                        (collection as HTMLElement).style.left = buttonRect.left + "px";
+                        (collection as HTMLElement).style.top = (buttonRect.bottom + 5) + "px";
                         (collection as HTMLElement).style.zIndex = "9999";
                         (collection as HTMLElement).style.maxHeight = "300px";
                         (collection as HTMLElement).style.overflowY = "auto";
 
+                        // Ensure dropdown doesn't go off-screen to the right
                         const collectionRect = (collection as HTMLElement).getBoundingClientRect();
-                        const containerRightEdge =
-                          containerRect.left + (scrollContainer?.clientWidth || window.innerWidth);
-
-                        if (collectionRect.right > containerRightEdge) {
-                          const adjustedLeft = leftPosition - (collectionRect.right - containerRightEdge) - 10;
+                        const viewportWidth = window.innerWidth;
+                        
+                        if (collectionRect.right > viewportWidth - 10) {
+                          const adjustedLeft = buttonRect.right - collectionRect.width;
                           (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + "px";
                         }
                       }
@@ -166,6 +160,7 @@ export default function AllRoomAmenitiesTable() {
             columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
           }}
         />
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
+import VanaReportPage from "@/components/dailyoccupancyreport/VanaReport";
+
 const VanaVihariReportPage = () => {
     return (
         <div>
-            vanaviharireportPage
+            <VanaReportPage/>
         </div>
     )
 }
