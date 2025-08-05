@@ -1,7 +1,9 @@
+import CheckinPage from "@/components/frontdesk/CheckInPage";
+
 const CheckInPage = () => {
     return (
         <div>
-            checkinPage
+            <CheckinPage/>
         </div>
     )
 }

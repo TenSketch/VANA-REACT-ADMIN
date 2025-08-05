@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       label: "Daily Occupancy Report",
       icon: ClipboardMinus,
       children: [
-        { label: "VanaVihari", path: "/dailyoccupanyreport/vanavihari", icon: ClipboardCheck},
+        { label: "Vanavihari", path: "/dailyoccupanyreport/vanavihari", icon: ClipboardCheck},
         { label: "JungleStar", path: "/dailyoccupanyreport/junglestar", icon: ClipboardCheck},
       ],
     },
@@ -145,10 +145,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-white/10 backdrop-blur-md z-40 lg:hidden"
           onClick={onClose}
         />
       )}
+
 
       {/* Sidebar */}
       <aside

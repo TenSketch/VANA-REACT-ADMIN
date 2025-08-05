@@ -57,7 +57,7 @@ export default function GuestTable() {
       }
     };
 
-    const scrollContainer = document.querySelector(".dt-scroll-wrapper");
+    const scrollContainer = document.querySelector(".dt-table-scroll");
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll);
     }
@@ -100,57 +100,68 @@ export default function GuestTable() {
   ];
 
   return (
-    <div className="p-6 w-full overflow-auto dt-scroll-wrapper">
+    <div className="p-6 w-full">
       <h2 className="text-xl font-semibold text-slate-800 mb-4">Guest Records</h2>
+
+      {/* Table Container */}
       <div ref={tableRef} style={{ position: "relative", minWidth: "max-content" }}>
-        <DataTable
-          data={guests}
-          columns={columns}
-          className="display nowrap"
-          options={{
-            pageLength: 10,
-            lengthMenu: [5, 10, 25, 50, 100],
-            order: [[0, "asc"]],
-            searching: true,
-            paging: true,
-            info: true,
-            dom: "Bfrtip",
-            buttons: [
-              {
-                extend: "colvis",
-                text: "Column Visibility",
-                collectionLayout: "fixed two-column",
-                init: function (_api: any, node: any, _config: any) {
-                  node.on("click", function () {
-                    setTimeout(() => {
-                      const collection = document.querySelector(".dt-button-collection");
-                      if (collection) {
-                        const button = node[0];
-                        const buttonRect = button.getBoundingClientRect();
-
-                        (collection as HTMLElement).style.position = "fixed";
-                        (collection as HTMLElement).style.left = buttonRect.left + "px";
-                        (collection as HTMLElement).style.top = buttonRect.bottom + 5 + "px";
-                        (collection as HTMLElement).style.zIndex = "9999";
-                        (collection as HTMLElement).style.maxHeight = "300px";
-                        (collection as HTMLElement).style.overflowY = "auto";
-
-                        const collectionRect = (collection as HTMLElement).getBoundingClientRect();
-                        const viewportWidth = window.innerWidth;
-
-                        if (collectionRect.right > viewportWidth - 10) {
-                          const adjustedLeft = buttonRect.right - collectionRect.width;
-                          (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + "px";
-                        }
-                      }
-                    }, 10);
-                  });
-                },
+        {/* Scrollable Table Only */}
+        <div className="overflow-auto dt-table-scroll">
+          <DataTable
+            data={guests}
+            columns={columns}
+            className="display nowrap"
+            options={{
+              pageLength: 10,
+              lengthMenu: [5, 10, 25, 50, 100],
+              order: [[0, "asc"]],
+              searching: true,
+              paging: true,
+              info: true,
+              scrollX: true, // ✅ enable scroll on X only
+              layout: {
+                topStart: 'buttons',
+                topEnd: 'search',
+                bottomStart: 'pageLength',
+                bottomEnd: 'paging'
               },
-            ],
-            columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
-          }}
-        />
+              buttons: [
+                {
+                  extend: "colvis",
+                  text: "Column Visibility",
+                  collectionLayout: "fixed two-column",
+                  init: function (_api: any, node: any, _config: any) {
+                    node.on("click", function () {
+                      setTimeout(() => {
+                        const collection = document.querySelector(".dt-button-collection");
+                        if (collection) {
+                          const button = node[0];
+                          const buttonRect = button.getBoundingClientRect();
+
+                          (collection as HTMLElement).style.position = "fixed";
+                          (collection as HTMLElement).style.left = buttonRect.left + "px";
+                          (collection as HTMLElement).style.top = buttonRect.bottom + 5 + "px";
+                          (collection as HTMLElement).style.zIndex = "9999";
+                          (collection as HTMLElement).style.maxHeight = "300px";
+                          (collection as HTMLElement).style.overflowY = "auto";
+
+                          const collectionRect = (collection as HTMLElement).getBoundingClientRect();
+                          const viewportWidth = window.innerWidth;
+
+                          if (collectionRect.right > viewportWidth - 10) {
+                            const adjustedLeft = buttonRect.right - collectionRect.width;
+                            (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + "px";
+                          }
+                        }
+                      }, 10);
+                    });
+                  },
+                },
+              ],
+              columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+            }}
+          />
+        </div>
       </div>
     </div>
   );

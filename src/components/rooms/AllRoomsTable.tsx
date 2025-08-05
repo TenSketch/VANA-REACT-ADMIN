@@ -83,8 +83,9 @@ export default function RoomsTable() {
     {
       data: "roomImage",
       title: "Room Image",
-      render: (data: string, _type: string, row: Room) =>
-        `<img src="${data}" alt="${row.roomName}" style="width: 64px; height: 48px; object-fit: cover; border-radius: 4px;" />`,
+      render: (data: string, _type: string, row: Room) => 
+        `<img src="${data}" alt="${row.roomName}" 
+              style="width: 64px; height: 48px; object-fit: cover; border-radius: 4px;" />`,
     },
     {
       data: "weekdayRate",
@@ -125,7 +126,12 @@ export default function RoomsTable() {
             searching: true,
             paging: true,
             info: true,
-            dom: 'Bfrtip',
+            layout: {
+              topStart: 'buttons',
+              topEnd: 'search',
+              bottomStart: 'pageLength',
+              bottomEnd: 'paging'
+            },
             buttons: [
               {
                 extend: 'colvis',

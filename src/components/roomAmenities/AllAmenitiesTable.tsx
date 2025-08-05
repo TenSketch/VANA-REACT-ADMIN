@@ -121,7 +121,12 @@ export default function AllRoomAmenitiesTable() {
             searching: true,
             paging: true,
             info: true,
-            dom: "Bfrtip",
+            layout: {
+              topStart: 'buttons',
+              topEnd: 'search',
+              bottomStart: 'pageLength',
+              bottomEnd: 'paging'
+            },
             buttons: [
               {
                 extend: "colvis",

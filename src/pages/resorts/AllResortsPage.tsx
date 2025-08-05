@@ -41,7 +41,7 @@ const AllResortsPage = () => {
     {
       id: "1",
       name: "Jungle Star, Valamuru",
-      imageUrl: "/src/assets/images/Jungle_Star-reception.jpg",
+      imageUrl: "/images/Jungle_Star-reception.jpg",
       address: "Jungle Nature Camp Site, Valamuru, Maredumilli, Andhra Pradesh, 533295, India",
       phone: "+91 7382151617",
       email: "junglestarecocamp@gmail.com",
@@ -56,7 +56,7 @@ const AllResortsPage = () => {
       stateProvince: "Andhra Pradesh",
       postalCode: "533295",
       country: "India",
-      logo: "/src/assets/images/Jungle_Star-reception.jpg", // Sample logo path
+      logo: "/images/Jungle_Star-reception.jpg", // Sample logo path
       website: "www.junglestar.com",
       termsAndConditions: `Check-in Time: 10:00 AM (After CIST)
     Check-out Time: The following morning (CIST)
@@ -77,7 +77,7 @@ const AllResortsPage = () => {
     - Accommodation includes all meals (breakfast, lunch, dinner).
     - Food served is traditional Andhra cuisine with vegetarian and non-vegetarian options.`,
       upiId: "junglestar@paytm",
-      qrFile: "/src/assets/images/sample-qr-code.png", // Sample QR code path
+      qrFile: "/images/Jungle_Star-reception.jpg", // Sample QR code path
       foodProviding: "Yes",
       foodDetails: "Traditional Andhra cuisine, vegetarian and non-vegetarian options available. Breakfast, lunch, and dinner served.",
       roomIdPrefix: "JS",
@@ -88,7 +88,7 @@ const AllResortsPage = () => {
     {
       id: "2",
       name: "Vanavihari, Maredumilli",
-      imageUrl: "/src/assets/images/Vanavihari-reception.jpg",
+      imageUrl: "/images/Vanavihari-reception.jpg",
       address: "Co-Ordinator(Complex Manager), Community Based Eco Tourism, Maredumilli, Andhra Pradesh, 533295, India",
       phone: "+91 9494151617",
       email: "info@vanavihari.com",
@@ -103,7 +103,7 @@ const AllResortsPage = () => {
       stateProvince: "Andhra Pradesh",
       postalCode: "533295",
       country: "India",
-      logo: "/src/assets/images/Vanavihari-reception.jpg", // No logo for this resort
+      logo: "/images/Vanavihari-reception.jpg", // No logo for this resort
       website: "www.vanavihari.com",
       termsAndConditions: "Eco-tourism resort with sustainable practices. Check-in: 1:00 PM, Check-out: 12:00 PM. Forest entry permits required.",
       upiId: "vanavihari@gpay",

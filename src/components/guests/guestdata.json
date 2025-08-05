@@ -28,5 +28,46 @@
     "registrationDate": "2025-07-17",
     "emailVerificationToken": "verify-789",
     "accessToken": "access-ghi789"
+  },
+  {
+    "id": "G003",
+    "fullName": "Vikram Singh",
+    "phone": "+91 9810012312",
+    "email": "vikram@example.com",
+    "address": "789 Sunset Blvd, Bengaluru, Karnataka",
+    "registrationDate": "2025-07-17",
+    "emailVerificationToken": "verify-789",
+    "accessToken": "access-ghi789"
+  },
+  {
+    "id": "G003",
+    "fullName": "Vikram Singh",
+    "phone": "+91 9810012312",
+    "email": "vikram@example.com",
+    "address": "789 Sunset Blvd, Bengaluru, Karnataka",
+    "registrationDate": "2025-07-17",
+    "emailVerificationToken": "verify-789",
+    "accessToken": "access-ghi789"
+  },
+  {
+    "id": "G003",
+    "fullName": "Vikram Singh",
+    "phone": "+91 9810012312",
+    "email": "vikram@example.com",
+    "address": "789 Sunset Blvd, Bengaluru, Karnataka",
+    "registrationDate": "2025-07-17",
+    "emailVerificationToken": "verify-789",
+    "accessToken": "access-ghi789"
+  },
+  {
+    "id": "G003",
+    "fullName": "Vikram Singh",
+    "phone": "+91 9810012312",
+    "email": "vikram@example.com",
+    "address": "789 Sunset Blvd, Bengaluru, Karnataka",
+    "registrationDate": "2025-07-17",
+    "emailVerificationToken": "verify-789",
+    "accessToken": "access-ghi789"
   }
+
 ]

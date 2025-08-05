@@ -149,71 +149,80 @@ export default function ReservationTable() {
 
   return (
     <div className="p-6 w-full">
-      <h2 className="text-xl font-semibold text-slate-800 mb-4">Guest Reservations</h2>
-      <div className="overflow-auto" style={{ position: 'relative' }}>
-        <div ref={tableRef} style={{ position: 'relative', minWidth: 'max-content' }}>
-          <DataTable
-            data={reservations}
-            columns={columns}
-            className="display nowrap"
-            options={{
-              pageLength: 10,
-              lengthMenu: [5, 10, 25, 50, 100],
-              order: [[0, "asc"]],
-              searching: true,
-              paging: true,
-              info: true,
-              dom: "Bfrtip",
-              buttons: [
-                {
-                  extend: "colvis",
-                  text: "Column Visibility",
-                  collectionLayout: "fixed two-column",
-                  init: function (_api: any, node: any, _config: any) {
-                    node.on("click", function () {
-                      setTimeout(() => {
-                        const collection = document.querySelector(".dt-button-collection");
-                        if (collection) {
-                          const button = node[0];
-                          const buttonRect = button.getBoundingClientRect();
+  <h2 className="text-xl font-semibold text-slate-800 mb-4">Guest Reservations</h2>
 
-                          const viewportWidth = window.innerWidth;
-                          const dropdownWidth = (collection as HTMLElement).offsetWidth;
+  {/* Fixed Top Controls (search + buttons) will stay here */}
+  <div ref={tableRef} style={{ position: 'relative' }}>
+    <DataTable
+      data={reservations}
+      columns={columns}
+      className="display nowrap"
+      options={{
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        order: [[0, "asc"]],
+        searching: true,
+        paging: true,
+        info: true,
+        layout: {
+          topStart: 'buttons',
+          topEnd: 'search',
+          bottomStart: 'pageLength',
+          bottomEnd: 'paging'
+        },
+        buttons: [
+          {
+            extend: "colvis",
+            text: "Column Visibility",
+            collectionLayout: "fixed two-column",
+            init: function (_api: any, node: any, _config: any) {
+              node.on("click", function () {
+                setTimeout(() => {
+                  const collection = document.querySelector(".dt-button-collection");
+                  if (collection) {
+                    const button = node[0];
+                    const buttonRect = button.getBoundingClientRect();
 
-                          let left = buttonRect.left;
-                          let top = buttonRect.bottom + 30;
+                    const viewportWidth = window.innerWidth;
+                    const dropdownWidth = (collection as HTMLElement).offsetWidth;
 
-                          // Adjust if it overflows right
-                          if (left + dropdownWidth > viewportWidth - 10) {
-                            left = viewportWidth - dropdownWidth - 10;
-                          }
+                    let left = buttonRect.left;
+                    let top = buttonRect.bottom + 30;
 
-                          // Ensure it doesn’t go off the left side
-                          if (left < 10) {
-                            left = 10;
-                          }
+                    if (left + dropdownWidth > viewportWidth - 10) {
+                      left = viewportWidth - dropdownWidth - 10;
+                    }
 
-                          (collection as HTMLElement).style.position = "fixed";
-                          (collection as HTMLElement).style.left = `${left}px`;
-                          (collection as HTMLElement).style.top = `${top}px`;
-                          (collection as HTMLElement).style.zIndex = "9999";
-                          (collection as HTMLElement).style.maxHeight = "300px";
-                          (collection as HTMLElement).style.overflowY = "auto";
-                        }
-                      }, 10);
-                    });
-                  },
-                },
-              ],
-              columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
-              ordering: {
-                indicators: false,
-                handler: false,
-              },
-            }}
-          />
-        </div>
-      </div>
-    </div>
+                    if (left < 10) {
+                      left = 10;
+                    }
+
+                    (collection as HTMLElement).style.position = "fixed";
+                    (collection as HTMLElement).style.left = `${left}px`;
+                    (collection as HTMLElement).style.top = `${top}px`;
+                    (collection as HTMLElement).style.zIndex = "9999";
+                    (collection as HTMLElement).style.maxHeight = "300px";
+                    (collection as HTMLElement).style.overflowY = "auto";
+                  }
+                }, 10);
+              });
+            },
+          },
+        ],
+        columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+        ordering: {
+          indicators: false,
+          handler: false,
+        },
+      }}
+    />
+  </div>
+
+  {/* Horizontal scroll should apply ONLY to the table, not controls */}
+  <div className="overflow-auto mt-4">
+    <table className="display nowrap w-full"></table> {/* This gets replaced by DataTable */}
+  </div>
+</div>
+
   );
 }

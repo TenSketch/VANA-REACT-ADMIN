@@ -139,7 +139,12 @@ export default function CottageDataTable() {
             searching: true,
             paging: true,
             info: true,
-            dom: "Bfrtip",
+            layout: {
+              topStart: 'buttons',
+              topEnd: 'search',
+              bottomStart: 'pageLength',
+              bottomEnd: 'paging'
+            },
             buttons: [
               {
                 extend: "colvis",
