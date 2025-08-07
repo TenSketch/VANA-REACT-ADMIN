@@ -6,6 +6,7 @@ import "datatables.net-buttons";
 import "datatables.net-buttons/js/buttons.colVis.js";
 import "datatables.net-columncontrol-dt";
 import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
+
 import Amenitydata from "./amenitydata.json";
 import { useEffect, useRef } from "react";
 
@@ -43,6 +44,9 @@ export default function AllRoomAmenitiesTable() {
       .dt-button-collection.dropdown-menu {
         transform: none !important;
       }
+      .dataTables_scrollBody {
+        overflow-x: auto !important;
+      }
     `;
     document.head.appendChild(style);
 
@@ -53,7 +57,7 @@ export default function AllRoomAmenitiesTable() {
       }
     };
 
-    const scrollContainer = document.querySelector(".overflow-auto");
+    const scrollContainer = document.querySelector(".dataTables_scrollBody");
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll);
     }
@@ -108,63 +112,70 @@ export default function AllRoomAmenitiesTable() {
   return (
     <div className="p-6 w-full">
       <h2 className="text-xl font-semibold text-slate-800 mb-4">Room Amenities</h2>
-      <div className="overflow-auto" style={{ position: "relative" }}>
-        <div ref={tableRef} style={{ position: "relative", minWidth: "max-content" }}>
-          <DataTable
-          data={amenities}
-          columns={columns}
-          className="display nowrap"
-          options={{
-            pageLength: 10,
-            lengthMenu: [5, 10, 25, 50],
-            order: [[0, "asc"]],
-            searching: true,
-            paging: true,
-            info: true,
-            layout: {
-              topStart: 'buttons',
-              topEnd: 'search',
-              bottomStart: 'pageLength',
-              bottomEnd: 'paging'
-            },
-            buttons: [
-              {
-                extend: "colvis",
-                text: "Column Visibility",
-                collectionLayout: "fixed two-column",
-                init: function (_api: any, node: any, _config: any) {
-                  node.on("click", function () {
-                    setTimeout(() => {
-                      const collection = document.querySelector(".dt-button-collection");
-                      if (collection) {
-                        const button = node[0];
-                        const buttonRect = button.getBoundingClientRect();
-                        
-                        // Use fixed positioning relative to viewport
-                        (collection as HTMLElement).style.position = "fixed";
-                        (collection as HTMLElement).style.left = buttonRect.left + "px";
-                        (collection as HTMLElement).style.top = (buttonRect.bottom + 5) + "px";
-                        (collection as HTMLElement).style.zIndex = "9999";
-                        (collection as HTMLElement).style.maxHeight = "300px";
-                        (collection as HTMLElement).style.overflowY = "auto";
 
-                        // Ensure dropdown doesn't go off-screen to the right
-                        const collectionRect = (collection as HTMLElement).getBoundingClientRect();
-                        const viewportWidth = window.innerWidth;
-                        
-                        if (collectionRect.right > viewportWidth - 10) {
-                          const adjustedLeft = buttonRect.right - collectionRect.width;
-                          (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + "px";
-                        }
-                      }
-                    }, 10);
-                  });
-                },
+      {/* Top Controls */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="dt-buttons" />
+        <div className="dataTables_filter" />
+      </div>
+
+      {/* Table wrapper with scroll */}
+      <div className="relative">
+        <div ref={tableRef} style={{ position: "relative" }}>
+          <DataTable
+            data={amenities}
+            columns={columns}
+            className="display nowrap w-full"
+            options={{
+              scrollX: true,
+              pageLength: 10,
+              lengthMenu: [5, 10, 25, 50],
+              order: [[0, "asc"]],
+              searching: true,
+              paging: true,
+              info: true,
+              layout: {
+                topStart: "buttons",
+                topEnd: "search",
+                bottomStart: "pageLength",
+                bottomEnd: "paging",
               },
-            ],
-            columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
-          }}
-        />
+              buttons: [
+                {
+                  extend: "colvis",
+                  text: "Column Visibility",
+                  collectionLayout: "fixed two-column",
+                  init: function (_api: any, node: any, _config: any) {
+                    node.on("click", function () {
+                      setTimeout(() => {
+                        const collection = document.querySelector(".dt-button-collection");
+                        if (collection) {
+                          const button = node[0];
+                          const buttonRect = button.getBoundingClientRect();
+
+                          (collection as HTMLElement).style.position = "fixed";
+                          (collection as HTMLElement).style.left = buttonRect.left + "px";
+                          (collection as HTMLElement).style.top = buttonRect.bottom + 5 + "px";
+                          (collection as HTMLElement).style.zIndex = "9999";
+                          (collection as HTMLElement).style.maxHeight = "300px";
+                          (collection as HTMLElement).style.overflowY = "auto";
+
+                          const collectionRect = (collection as HTMLElement).getBoundingClientRect();
+                          const viewportWidth = window.innerWidth;
+
+                          if (collectionRect.right > viewportWidth - 10) {
+                            const adjustedLeft = buttonRect.right - collectionRect.width;
+                            (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + "px";
+                          }
+                        }
+                      }, 10);
+                    });
+                  },
+                },
+              ],
+              columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+            }}
+          />
         </div>
       </div>
     </div>

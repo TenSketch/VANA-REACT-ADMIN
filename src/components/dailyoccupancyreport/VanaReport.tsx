@@ -15,7 +15,6 @@ DataTable.use(DT);
 interface Reservation {
   roomName: string;
   status?: string;
-
   bookingId?: string;
   guestName?: string;
   paidAmount?: number;
@@ -29,6 +28,52 @@ interface Reservation {
 }
 
 const reservationData: Reservation[] = reservations;
+
+// ✅ Export to Excel function (copied from JungleStar version)
+const exportToExcel = () => {
+  const headers = [
+    "Room Name",
+    "Booking ID",
+    "Guest Name",
+    "Paid Amount",
+    "Guest(s)",
+    "Extra Guest(s)",
+    "Children",
+    "Total Guests",
+    "Total Foods",
+    "No. of Days",
+    "Remaining Days",
+  ];
+
+  const csvRows = [
+    headers.join(","),
+    ...reservationData
+      .filter((row) => !row.status)
+      .map((row) =>
+        [
+          `"${row.roomName}"`,
+          `"${row.bookingId || ""}"`,
+          `"${row.guestName || ""}"`,
+          row.paidAmount ?? "",
+          row.guests ?? "",
+          row.extraGuests ?? "",
+          row.children ?? "",
+          row.totalGuests ?? "",
+          row.totalFoods ?? "",
+          row.noOfDays ?? "",
+          row.remainingDays ?? "",
+        ].join(",")
+      ),
+  ];
+
+  const csvContent = csvRows.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "Daily_Occupancy_Report_Vanavihari.csv");
+  link.click();
+};
 
 export default function DailyOccupancyReport() {
   const tableRef = useRef(null);
@@ -132,10 +177,33 @@ export default function DailyOccupancyReport() {
 
   return (
     <div className="p-6 w-full">
-      <h2 className="text-xl font-semibold text-slate-800 mb-1">
-        Today's Occupancy Report – Vanavihari
-      </h2>
-      <p className="text-sm text-gray-500 mb-4">Today: {today}</p>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-800 mb-1">
+            Today's Occupancy Report – Vanavihari
+          </h2>
+          <p className="text-sm text-gray-500">Today: {today}</p>
+        </div>
+        <button
+          onClick={exportToExcel}
+          className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+        >
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          Export to Excel
+        </button>
+      </div>
 
       <div className="overflow-auto" style={{ position: "relative" }}>
         <div ref={tableRef} style={{ position: "relative", minWidth: "max-content" }}>

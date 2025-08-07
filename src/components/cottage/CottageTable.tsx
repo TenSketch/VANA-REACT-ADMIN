@@ -36,14 +36,49 @@ export default function CottageDataTable() {
         border-radius: 4px !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
       }
-      .dataTables_wrapper .dt-buttons {
-        position: relative;
+      .dataTables_wrapper .dataTables_filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 1rem;
+      }
+      .dataTables_wrapper .dataTables_length {
+        margin-bottom: 1rem;
       }
       .dataTables_wrapper {
-        position: relative;
+        width: 100%;
+        overflow: visible;
       }
-      .dt-button-collection.dropdown-menu {
-        transform: none !important;
+      .dataTables_wrapper .dataTables_scroll {
+        width: 100%;
+        overflow: visible;
+      }
+      .dataTables_wrapper .dataTables_scrollHead,
+      .dataTables_wrapper .dataTables_info,
+      .dataTables_wrapper .dataTables_paginate,
+      .dataTables_wrapper .dataTables_length,
+      .dataTables_wrapper .dataTables_filter,
+      .dataTables_wrapper .dt-buttons {
+        width: 100%;
+        overflow: visible;
+      }
+      .dataTables_wrapper .dataTables_scrollBody {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+      }
+      .dataTables_wrapper table {
+        width: max-content !important;
+        min-width: 100%;
+        margin: 0 !important;
+      }
+      .dataTables_wrapper .dataTables_scrollHead {
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+      .dataTables_wrapper .dataTables_scrollHeadInner {
+        width: 100% !important;
       }
     `;
     document.head.appendChild(style);
@@ -55,7 +90,7 @@ export default function CottageDataTable() {
       }
     };
 
-    const scrollContainer = document.querySelector(".dt-scroll-wrapper");
+    const scrollContainer = document.querySelector(".dataTables_scrollBody");
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll);
     }
@@ -125,13 +160,13 @@ export default function CottageDataTable() {
   ];
 
   return (
-    <div className="p-6 w-full overflow-auto dt-scroll-wrapper">
+    <div className="p-6 w-full overflow-hidden">
       <h2 className="text-xl font-semibold text-slate-800 mb-4">Cottage Types</h2>
-      <div ref={tableRef} style={{ position: "relative", minWidth: "max-content" }}>
+      <div ref={tableRef} className="w-full">
         <DataTable
           data={cottageTypes}
           columns={columns}
-          className="display nowrap"
+          className="display nowrap w-full"
           options={{
             pageLength: 10,
             lengthMenu: [5, 10, 25, 50, 100],
@@ -139,11 +174,13 @@ export default function CottageDataTable() {
             searching: true,
             paging: true,
             info: true,
+            scrollX: true,
+            scrollCollapse: true,
             layout: {
-              topStart: 'buttons',
-              topEnd: 'search',
-              bottomStart: 'pageLength',
-              bottomEnd: 'paging'
+              topStart: "buttons",
+              topEnd: "search",
+              bottomStart: "pageLength",
+              bottomEnd: "paging",
             },
             buttons: [
               {
