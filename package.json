@@ -28,6 +28,7 @@
     "datatables.net-colreorder-dt": "^2.1.1",
     "datatables.net-columncontrol-dt": "^1.0.7",
     "datatables.net-dt": "^2.3.2",
+    "datatables.net-fixedheader-dt": "^4.0.3",
     "datatables.net-react": "^1.0.1",
     "datatables.net-responsive": "^3.0.5",
     "datatables.net-responsive-dt": "^3.0.5",

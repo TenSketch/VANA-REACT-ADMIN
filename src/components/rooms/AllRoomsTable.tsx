@@ -42,47 +42,57 @@ export default function RoomsTable() {
         border-radius: 4px !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
       }
-      .dataTables_wrapper .dt-buttons {
-        position: relative;
-      }
       .dataTables_wrapper {
         position: relative;
         width: 100%;
-        overflow: visible;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .dataTables_wrapper .dt-layout-row {
+        flex-shrink: 0;
       }
       .dataTables_wrapper .dataTables_scroll {
-        width: 100%;
-        overflow: visible;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
       }
-      .dataTables_wrapper .dataTables_scrollHead,
-      .dataTables_wrapper .dataTables_info,
-      .dataTables_wrapper .dataTables_paginate,
-      .dataTables_wrapper .dataTables_length,
-      .dataTables_wrapper .dataTables_filter,
-      .dataTables_wrapper .dt-buttons {
-        width: 100%;
-        overflow: visible;
+      .dataTables_wrapper .dataTables_scrollHead {
+        flex-shrink: 0;
+        border-radius: 0.5rem 0.5rem 0 0;
+        border: 1px solid #ddd;
+        border-bottom: none;
+        background: #f8f9fa;
+      }
+      .dataTables_wrapper .dataTables_scrollHeadInner {
+        width: 100% !important;
       }
       .dataTables_wrapper .dataTables_scrollBody {
-        overflow-x: auto !important;
-        overflow-y: visible !important;
+        flex: 1;
+        overflow: auto !important;
         width: 100%;
         border: 1px solid #ddd;
-        border-radius: 0.5rem;
+        border-top: none;
+        border-radius: 0 0 0.5rem 0.5rem;
+        min-height: 300px;
+        max-height: calc(100vh - 350px);
       }
       .dataTables_wrapper table {
         width: max-content !important;
         min-width: 100%;
         margin: 0 !important;
       }
-      .dataTables_wrapper .dataTables_scrollHead {
-        border-radius: 0.5rem 0.5rem 0 0;
-      }
-      .dataTables_wrapper .dataTables_scrollHeadInner {
-        width: 100% !important;
-      }
       .dt-button-collection.dropdown-menu {
         transform: none !important;
+      }
+      .dataTables_wrapper .dt-buttons {
+        margin-bottom: 1rem;
+      }
+      .dataTables_wrapper .dataTables_info,
+      .dataTables_wrapper .dataTables_paginate {
+        margin-top: 1rem;
       }
     `;
     document.head.appendChild(style);
@@ -145,28 +155,32 @@ export default function RoomsTable() {
   ];
 
   return (
-    <div className="p-6 w-full max-w-full overflow-hidden">
-      <h2 className="text-xl font-semibold text-slate-800 mb-4">Rooms Table</h2>
-      <div ref={tableRef} className="w-full">
-        <DataTable
-          data={roomsData}
-          columns={columns}
-          className="display nowrap w-full"
-          options={{
-            pageLength: 10,
-            lengthMenu: [5, 10, 25, 50, 100],
-            order: [[0, 'asc']],
-            searching: true,
-            paging: true,
-            info: true,
-            scrollX: true,
-            scrollCollapse: true,
-            layout: {
-              topStart: 'buttons',
-              topEnd: 'search',
-              bottomStart: 'pageLength',
-              bottomEnd: 'paging'
-            },
+    <div className="flex flex-col h-full max-h-screen overflow-hidden">
+      <div className="flex-shrink-0 px-6 py-4 bg-white border-b">
+        <h2 className="text-xl font-semibold text-slate-800">Rooms Table</h2>
+      </div>
+      <div className="flex-1 px-6 py-4 overflow-hidden">
+        <div ref={tableRef} className="h-full">
+          <DataTable
+            data={roomsData}
+            columns={columns}
+            className="display nowrap w-full"
+            options={{
+              pageLength: 10,
+              lengthMenu: [5, 10, 25, 50, 100],
+              order: [[0, 'asc']],
+              searching: true,
+              paging: true,
+              info: true,
+              scrollX: true,
+              scrollY: "400px",
+              scrollCollapse: true,
+              layout: {
+                topStart: 'buttons',
+                topEnd: 'search',
+                bottomStart: 'pageLength',
+                bottomEnd: 'paging'
+              },
             buttons: [
               {
                 extend: 'colvis',
@@ -203,6 +217,7 @@ export default function RoomsTable() {
             columnControl: ['order', ['orderAsc', 'orderDesc', 'spacer', 'search']],
           }}
         />
+        </div>
       </div>
     </div>
   );
