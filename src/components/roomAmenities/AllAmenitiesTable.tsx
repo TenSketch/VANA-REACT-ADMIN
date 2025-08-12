@@ -27,6 +27,7 @@ export default function AllRoomAmenitiesTable() {
   useEffect(() => {
     const style = document.createElement("style");
     style.innerHTML = `
+      /* Button dropdown styling */
       .dt-button-collection {
         position: fixed !important;
         z-index: 9999 !important;
@@ -44,8 +45,14 @@ export default function AllRoomAmenitiesTable() {
       .dt-button-collection.dropdown-menu {
         transform: none !important;
       }
-      .dataTables_scrollBody {
+
+      /* Force table body to scroll internally */
+      .dataTables_wrapper .dataTables_scrollBody {
         overflow-x: auto !important;
+        overflow-y: auto !important;
+        max-height: 400px; /* adjust height as needed */
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
       }
     `;
     document.head.appendChild(style);
@@ -111,7 +118,9 @@ export default function AllRoomAmenitiesTable() {
 
   return (
     <div className="p-6 w-full">
-      <h2 className="text-xl font-semibold text-slate-800 mb-4">Room Amenities</h2>
+      <h2 className="text-xl font-semibold text-slate-800 mb-4">
+        Room Amenities
+      </h2>
 
       {/* Top Controls */}
       <div className="flex justify-between items-center mb-4">
@@ -119,7 +128,7 @@ export default function AllRoomAmenitiesTable() {
         <div className="dataTables_filter" />
       </div>
 
-      {/* Table wrapper with scroll */}
+      {/* Table */}
       <div className="relative">
         <div ref={tableRef} style={{ position: "relative" }}>
           <DataTable
@@ -128,6 +137,8 @@ export default function AllRoomAmenitiesTable() {
             className="display nowrap w-full"
             options={{
               scrollX: true,
+              scrollY: "400px", // match CSS max-height
+              scrollCollapse: true,
               pageLength: 10,
               lengthMenu: [5, 10, 25, 50],
               order: [[0, "asc"]],
@@ -145,27 +156,34 @@ export default function AllRoomAmenitiesTable() {
                   extend: "colvis",
                   text: "Column Visibility",
                   collectionLayout: "fixed two-column",
-                  init: function (_api: any, node: any, _config: any) {
+                  init: function (_api: any, node: any) {
                     node.on("click", function () {
                       setTimeout(() => {
-                        const collection = document.querySelector(".dt-button-collection");
+                        const collection = document.querySelector(
+                          ".dt-button-collection"
+                        );
                         if (collection) {
                           const button = node[0];
                           const buttonRect = button.getBoundingClientRect();
 
                           (collection as HTMLElement).style.position = "fixed";
-                          (collection as HTMLElement).style.left = buttonRect.left + "px";
-                          (collection as HTMLElement).style.top = buttonRect.bottom + 5 + "px";
+                          (collection as HTMLElement).style.left =
+                            buttonRect.left + "px";
+                          (collection as HTMLElement).style.top =
+                            buttonRect.bottom + 5 + "px";
                           (collection as HTMLElement).style.zIndex = "9999";
                           (collection as HTMLElement).style.maxHeight = "300px";
                           (collection as HTMLElement).style.overflowY = "auto";
 
-                          const collectionRect = (collection as HTMLElement).getBoundingClientRect();
+                          const collectionRect =
+                            (collection as HTMLElement).getBoundingClientRect();
                           const viewportWidth = window.innerWidth;
 
                           if (collectionRect.right > viewportWidth - 10) {
-                            const adjustedLeft = buttonRect.right - collectionRect.width;
-                            (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + "px";
+                            const adjustedLeft =
+                              buttonRect.right - collectionRect.width;
+                            (collection as HTMLElement).style.left =
+                              Math.max(10, adjustedLeft) + "px";
                           }
                         }
                       }, 10);
@@ -173,7 +191,10 @@ export default function AllRoomAmenitiesTable() {
                   },
                 },
               ],
-              columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+              columnControl: [
+                "order",
+                ["orderAsc", "orderDesc", "spacer", "search"],
+              ],
             }}
           />
         </div>
