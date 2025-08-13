@@ -55,7 +55,6 @@ const exportToExcel = () => {
   const url = URL.createObjectURL(blob);
   link.setAttribute("href", url);
   link.setAttribute("download", "Guest_Records.csv");
-  link.style.visibility = "hidden";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -127,6 +126,10 @@ export default function GuestTable() {
       .dataTables_wrapper .dataTables_paginate {
         margin-top: 1rem;
       }
+      table.dataTable thead tr th,
+      table.dataTable thead tr td {
+        font-weight: 700 !important;
+      }
     `;
     document.head.appendChild(style);
 
@@ -169,26 +172,29 @@ export default function GuestTable() {
       title: "Actions",
       orderable: false,
       searchable: false,
-      render: function () {
-        return `
-          <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor:pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
-          </button>
-        `;
-      },
+      render: () => `
+        <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor:pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil">
+            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+            <path d="m15 5 4 4"/>
+          </svg>
+        </button>
+      `,
     },
   ];
 
   return (
-    <div className="flex flex-col h-full max-h-screen overflow-hidden p-6">
+    <div className="flex flex-col h-full max-h-screen overflow-hidden p-3 py-6">
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <h2 className="text-xl font-semibold text-slate-800">Guest Records</h2>
         <button
           onClick={exportToExcel}
-          className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+          className="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
         >
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           Export to Excel
         </button>
@@ -220,33 +226,7 @@ export default function GuestTable() {
                 extend: "colvis",
                 text: "Column Visibility",
                 collectionLayout: "fixed two-column",
-                init: function (_api: any, node: any, _config: any) {
-                  node.on("click", function () {
-                    setTimeout(() => {
-                      const collection = document.querySelector(".dt-button-collection");
-                      if (collection) {
-                        const button = node[0];
-                        const buttonRect = button.getBoundingClientRect();
-
-                        (collection as HTMLElement).style.position = "fixed";
-                        (collection as HTMLElement).style.left = buttonRect.left + "px";
-                        (collection as HTMLElement).style.top = buttonRect.bottom + 5 + "px";
-                        (collection as HTMLElement).style.zIndex = "9999";
-                        (collection as HTMLElement).style.maxHeight = "300px";
-                        (collection as HTMLElement).style.overflowY = "auto";
-
-                        const collectionRect = (collection as HTMLElement).getBoundingClientRect();
-                        const viewportWidth = window.innerWidth;
-
-                        if (collectionRect.right > viewportWidth - 10) {
-                          const adjustedLeft = buttonRect.right - collectionRect.width;
-                          (collection as HTMLElement).style.left = Math.max(10, adjustedLeft) + "px";
-                        }
-                      }
-                    }, 10);
-                  });
-                },
-              },
+              }
             ],
             columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
           }}

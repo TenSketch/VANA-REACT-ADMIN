@@ -1,8 +1,8 @@
-
+import LogForm from "@/components/logReports/LogTableForm";
 
 const LogTablePage = () => {
   return (
-    <div>LogTablePage</div>
+    <LogForm/>
   )
 }
 

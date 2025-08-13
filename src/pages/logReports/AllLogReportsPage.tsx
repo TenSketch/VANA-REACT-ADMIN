@@ -1,7 +1,7 @@
-
+import LogTable from "@/components/logReports/AllLogReports";
 const AllLogReportsPage = () => {
   return (
-    <div>AllLogReportsPage</div>
+    <LogTable/>
   )
 }
 

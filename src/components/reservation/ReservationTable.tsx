@@ -136,6 +136,10 @@ export default function ReservationTable() {
       .dataTables_wrapper .dataTables_scrollHeadInner {
         width: 100% !important;
       }
+      table.dataTable thead tr th,
+      table.dataTable thead tr td {
+        font-weight: 700 !important;
+      }
     `;
     document.head.appendChild(style);
 
@@ -234,6 +238,7 @@ export default function ReservationTable() {
                 collectionLayout: "fixed two-column",
               },
             ],
+            columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
           }}
         />
       </div>
