@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, MoreVertical, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   flexRender,
@@ -6,6 +6,14 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 interface ResortDetailData {
   resortName: string;
@@ -35,6 +43,9 @@ interface ResortDetailPanelProps {
 }
 
 const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState(resort);
+
   if (!isOpen) return null;
 
   const basicInfoData = [
@@ -136,55 +147,122 @@ const ResortDetailPanel = ({ resort, isOpen, onClose }: ResortDetailPanelProps) 
   ];
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-3/4 lg:w-1/2 bg-white shadow-xl overflow-y-auto border-l border-slate-200">
-      <div className="p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Resort Details</h2>
-            <p className="text-sm text-slate-600">View resort information</p>
-          </div>
-          <Button variant="outline" size="icon" onClick={onClose} className="p-2">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-6">
-          <SectionHeader title="Basic Information" />
-          <DataTable columns={infoColumns} data={basicInfoData} />
-
-          {resort.logo && (
-            <div className="flex flex-col space-y-2">
-              <h4 className="text-sm font-medium text-slate-700">Resort Logo</h4>
-              <div className="border border-slate-300 rounded-lg p-4 bg-slate-50 w-fit">
-                <img
-                  src={resort.logo}
-                  alt="Resort Logo"
-                  className="max-w-32 max-h-32 object-contain"
-                />
-              </div>
+    <>
+      {/* Main View Panel */}
+      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-3/4 lg:w-1/2 bg-white shadow-xl overflow-y-auto border-l border-slate-200">
+        <div className="p-4 sm:p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Resort Details</h2>
+              <p className="text-sm text-slate-600">View resort information</p>
             </div>
-          )}
+            <Button variant="outline" size="icon" onClick={onClose} className="p-2">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-          <SectionHeader title="Address Information" />
-          <DataTable columns={infoColumns} data={addressData} />
+          {/* Sections */}
+          <div className="space-y-6">
+            {/* Basic Info with Action Menu */}
+            <SectionHeader
+              title="Basic Information"
+              action={
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                      Edit
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              }
+            />
+            <DataTable columns={infoColumns} data={basicInfoData} />
 
-          <SectionHeader title="Food Information" />
-          <DataTable columns={infoColumns} data={foodData} />
-          <DataTable columns={textAreaColumns} data={foodDetailsData} />
+            {resort.logo && (
+              <div className="flex flex-col space-y-2">
+                <h4 className="text-sm font-medium text-slate-700">Resort Logo</h4>
+                <div className="border border-slate-300 rounded-lg p-4 bg-slate-50 w-fit">
+                  <img
+                    src={resort.logo}
+                    alt="Resort Logo"
+                    className="max-w-32 max-h-32 object-contain"
+                  />
+                </div>
+              </div>
+            )}
+
+            <SectionHeader title="Address Information" />
+            <DataTable columns={infoColumns} data={addressData} />
+
+            <SectionHeader title="Food Information" />
+            <DataTable columns={infoColumns} data={foodData} />
+            <DataTable columns={textAreaColumns} data={foodDetailsData} />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Edit Overlay Panel */}
+      {isEditing && (
+        <div className="fixed inset-y-0 right-0 z-[60] w-full sm:w-3/4 lg:w-1/2 bg-white shadow-xl overflow-y-auto border-l border-slate-200">
+          <div className="p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Edit Basic Information</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={() => setIsEditing(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => {
+                  console.log("Saved data:", formData);
+                  setIsEditing(false);
+                }}>
+                  <Check className="h-4 w-4 text-green-600" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-4">
+              {Object.keys(formData).map((key) => {
+                if (typeof formData[key as keyof ResortDetailData] !== "string") return null;
+                return (
+                  <div key={key}>
+                    <label className="block text-sm font-medium text-slate-700 mb-1 capitalize">
+                      {key.replace(/([A-Z])/g, " $1")}
+                    </label>
+                    <Input
+                      value={formData[key as keyof ResortDetailData] as string}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
 export default ResortDetailPanel;
 
-const SectionHeader = ({ title }: { title: string }) => (
-  <h3 className="text-lg sm:text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">
-    {title}
-  </h3>
+/* Section Header with optional action button */
+const SectionHeader = ({ title, action }: { title: string; action?: React.ReactNode }) => (
+  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+    <h3 className="text-lg sm:text-xl font-semibold text-slate-800">{title}</h3>
+    {action}
+  </div>
 );
 
+/* Generic Data Table */
 const DataTable = ({
   columns,
   data,

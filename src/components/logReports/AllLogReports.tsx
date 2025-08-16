@@ -6,6 +6,10 @@ import 'datatables.net-buttons';
 import 'datatables.net-buttons/js/buttons.colVis.js';
 import 'datatables.net-columncontrol-dt';
 import 'datatables.net-columncontrol-dt/css/columnControl.dataTables.css';
+
+import "datatables.net-fixedcolumns";
+import "datatables.net-fixedcolumns-dt/css/fixedColumns.dataTables.css";
+
 import AllLogs from "./logs.json";
 import { useEffect, useRef } from "react";
 
@@ -114,8 +118,17 @@ export default function LogsTable() {
   }, []);
 
   const columns = [
-    { data: "bookingId", title: "Booking ID" },
+    {
+      title: "S.No",
+      data: null,
+      render: (_data: any, _type: any, _row: any, meta: any) => {
+        return meta.row + 1 + meta.settings._iDisplayStart;
+      },
+      orderable: false,
+      searchable: false
+    },
     { data: "username", title: "Username" },
+    { data: "bookingId", title: "Booking ID" },
     { data: "logType", title: "Log Type" },
     { data: "logMessage", title: "Log Message" },
     {
@@ -142,11 +155,14 @@ export default function LogsTable() {
             options={{
               pageLength: 10,
               lengthMenu: [5, 10, 25, 50, 100],
-              order: [[4, 'desc']], // Sort by date by default
+              order: [[0, 'desc']], // Updated index for date column
               searching: true,
               paging: true,
               info: true,
               scrollX: true,
+              fixedColumns: {
+                leftColumns: 2
+              },
               scrollY: "400px",
               scrollCollapse: true,
               layout: {

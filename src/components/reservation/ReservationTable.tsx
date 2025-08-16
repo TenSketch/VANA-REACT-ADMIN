@@ -3,18 +3,30 @@ import DT from "datatables.net-dt";
 
 // Required plugins
 import "datatables.net-buttons";
-import "datatables.net-buttons/js/buttons.html5.js";
 import "datatables.net-buttons/js/buttons.colVis.js";
 import "datatables.net-columncontrol";
-import "jszip";
 
 // Styles
 import "datatables.net-dt/css/dataTables.dataTables.css";
 import "datatables.net-buttons-dt/css/buttons.dataTables.css";
 import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
 
+import "datatables.net-fixedcolumns";
+import "datatables.net-fixedcolumns-dt/css/fixedColumns.dataTables.css";
+
 import reservationdata from "./reservationtable.json";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 DataTable.use(DT);
 
@@ -89,6 +101,59 @@ const exportToExcel = () => {
 
 export default function ReservationTable() {
   const tableRef = useRef(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConfirmDisableOpen, setIsConfirmDisableOpen] = useState(false);
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  const [disablingReservation, setDisablingReservation] = useState<Reservation | null>(null);
+  const [disabledReservations, setDisabledReservations] = useState<Set<string>>(new Set());
+  const [formData, setFormData] = useState<Partial<Reservation>>({});
+
+  const handleEdit = (reservation: Reservation) => {
+    setEditingReservation(reservation);
+    setFormData({ ...reservation });
+    setIsEditOpen(true);
+  };
+
+  const handleDisable = (reservation: Reservation) => {
+    setDisablingReservation(reservation);
+    setIsConfirmDisableOpen(true);
+  };
+
+  const confirmDisable = () => {
+    if (disablingReservation) {
+      console.log('Disabling reservation:', disablingReservation.id);
+      setDisabledReservations(prev => new Set([...prev, disablingReservation.id]));
+      setIsConfirmDisableOpen(false);
+      setDisablingReservation(null);
+    }
+  };
+
+  const cancelDisable = () => {
+    setIsConfirmDisableOpen(false);
+    setDisablingReservation(null);
+  };
+
+  const handleUpdate = () => {
+    if (editingReservation && formData) {
+      console.log('Updating reservation:', formData);
+      setIsEditOpen(false);
+      setEditingReservation(null);
+      setFormData({});
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditOpen(false);
+    setEditingReservation(null);
+    setFormData({});
+  };
+
+  const handleInputChange = (field: keyof Reservation, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -118,7 +183,6 @@ export default function ReservationTable() {
       .dataTables_wrapper .dataTables_scrollBody {
         overflow-y: auto !important;
         overflow-x: auto !important;
-        max-height: 400px !important; /* Set your desired table height */
         border: 1px solid #ddd;
         border-radius: 0.5rem;
       }
@@ -140,30 +204,57 @@ export default function ReservationTable() {
       table.dataTable thead tr td {
         font-weight: 700 !important;
       }
+      /* Disabled row styling */
+      table.dataTable tbody tr.disabled-row {
+        background-color: #f5f5f5 !important;
+        opacity: 0.6 !important;
+        text-decoration: line-through !important;
+      }
+      table.dataTable tbody tr.disabled-row:hover {
+        background-color: #eeeeee !important;
+      }
+      /* Action button styling */
+      .edit-btn:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
+      .disable-btn:active:not([disabled]) {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
     `;
     document.head.appendChild(style);
 
-    const handleScroll = () => {
-      const collection = document.querySelector(".dt-button-collection");
-      if (collection && (collection as HTMLElement).style.display !== "none") {
-        (collection as HTMLElement).style.display = "none";
+    const handleButtonClick = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const reservationId = target.getAttribute('data-id');
+      const reservation = reservations.find(r => r.id === reservationId);
+      
+      if (reservation) {
+        if (target.classList.contains('edit-btn')) {
+          handleEdit(reservation);
+        } else if (target.classList.contains('disable-btn')) {
+          if (!disabledReservations.has(reservation.id)) {
+            handleDisable(reservation);
+          }
+        }
       }
     };
 
-    const scrollContainer = document.querySelector(".dataTables_scrollBody");
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      document.head.removeChild(style);
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", handleScroll);
-      }
-    };
+    // Add event listener for edit and disable buttons
+    document.addEventListener('click', handleButtonClick);
   }, []);
 
   const columns = [
+    {
+      title: "S.No",
+      data: null,
+      render: (_data: any, _type: any, _row: any, meta: any) => {
+        return meta.row + 1 + meta.settings._iDisplayStart;
+      },
+      orderable: false,
+      searchable: false
+    },
     { data: "fullName", title: "Full Name" },
     { data: "phone", title: "Phone" },
     { data: "email", title: "Email" },
@@ -192,13 +283,60 @@ export default function ReservationTable() {
       title: "Actions",
       orderable: false,
       searchable: false,
-      render: () => `
-        <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor:pointer">
-          ✏️
-        </button>
-      `,
+      render: (_data: any, _type: any, row: Reservation) => {
+        const isDisabled = disabledReservations.has(row.id);
+        return `
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button 
+              class="edit-btn" 
+              data-id="${row.id}" 
+              title="Edit Reservation"
+              style="
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                ${isDisabled ? 'opacity: 0.5;' : ''}
+              "
+              onmouseover="this.style.background='#2563eb'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'"
+              onmouseout="this.style.background='#3b82f6'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'"
+            >
+              Edit
+            </button>
+            <button 
+              class="disable-btn" 
+              data-id="${row.id}" 
+              title="${isDisabled ? 'Already Disabled' : 'Disable Record'}"
+              style="
+                background: ${isDisabled ? '#6b7280' : '#dc2626'};
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              "
+              ${isDisabled ? 'disabled' : ''}
+              onmouseover="${!isDisabled ? `this.style.background='#b91c1c'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'` : ''}"
+              onmouseout="${!isDisabled ? `this.style.background='#dc2626'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'` : ''}"
+            >
+              ${isDisabled ? 'Disabled' : 'Disable'}
+            </button>
+          </div>
+        `;
+      },
     },
   ];
+
 
   return (
     <div className="p-6 w-full max-w-full overflow-hidden">
@@ -225,8 +363,9 @@ export default function ReservationTable() {
             paging: true,
             info: true,
             scrollX: true,
+            fixedColumns: { leftColumns : 2 },
             scrollCollapse: true,
-            scrollY: "400px", // needed for DataTables fixed header
+            scrollY: "400px",
             layout: {
               topStart: "buttons",
               bottom1Start: "pageLength",
@@ -239,9 +378,191 @@ export default function ReservationTable() {
               },
             ],
             columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+            rowCallback: (row: any, data: any) => {
+              if (disabledReservations.has(data.id)) {
+                row.classList.add('disabled-row');
+              } else {
+                row.classList.remove('disabled-row');
+              }
+              return row;
+            },
           }}
         />
       </div>
+
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Reservation</DialogTitle>
+            <DialogDescription>
+              Make changes to the reservation details below.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {formData && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  value={formData.fullName || ''}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone || ''}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="checkIn">Check In Date</Label>
+                <Input
+                  id="checkIn"
+                  type="date"
+                  value={formData.checkIn || ''}
+                  onChange={(e) => handleInputChange('checkIn', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="checkOut">Check Out Date</Label>
+                <Input
+                  id="checkOut"
+                  type="date"
+                  value={formData.checkOut || ''}
+                  onChange={(e) => handleInputChange('checkOut', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="guests">Guests</Label>
+                <Input
+                  id="guests"
+                  type="number"
+                  value={formData.guests || 0}
+                  onChange={(e) => handleInputChange('guests', parseInt(e.target.value) || 0)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="children">Children</Label>
+                <Input
+                  id="children"
+                  type="number"
+                  value={formData.children || 0}
+                  onChange={(e) => handleInputChange('children', parseInt(e.target.value) || 0)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="extraGuests">Extra Guests</Label>
+                <Input
+                  id="extraGuests"
+                  type="number"
+                  value={formData.extraGuests || 0}
+                  onChange={(e) => handleInputChange('extraGuests', parseInt(e.target.value) || 0)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="rooms">Rooms</Label>
+                <Input
+                  id="rooms"
+                  type="number"
+                  value={formData.rooms || 0}
+                  onChange={(e) => handleInputChange('rooms', parseInt(e.target.value) || 0)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="resort">Resort</Label>
+                <Input
+                  id="resort"
+                  value={formData.resort || ''}
+                  onChange={(e) => handleInputChange('resort', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Input
+                  id="status"
+                  value={formData.status || ''}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="paymentStatus">Payment Status</Label>
+                <Input
+                  id="paymentStatus"
+                  value={formData.paymentStatus || ''}
+                  onChange={(e) => handleInputChange('paymentStatus', e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate}>
+              Update
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog for Disable Action */}
+      <Dialog open={isConfirmDisableOpen} onOpenChange={setIsConfirmDisableOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Disable</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to disable this reservation? This action will hide the record from the database.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {disablingReservation && (
+            <div className="py-4">
+              <p className="text-sm text-gray-600">
+                <strong>Reservation ID:</strong> {disablingReservation.id}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Guest:</strong> {disablingReservation.fullName}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Booking ID:</strong> {disablingReservation.bookingId}
+              </p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDisable}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDisable}>
+              Yes, Disable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

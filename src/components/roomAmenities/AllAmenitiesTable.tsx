@@ -7,8 +7,22 @@ import "datatables.net-buttons/js/buttons.colVis.js";
 import "datatables.net-columncontrol-dt";
 import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
 
+import "datatables.net-fixedcolumns"; 
+import "datatables.net-fixedcolumns-dt/css/fixedColumns.dataTables.css";
+
 import Amenitydata from "./amenitydata.json";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 DataTable.use(DT);
 
@@ -23,6 +37,63 @@ const amenities: Amenity[] = Amenitydata;
 
 export default function AllRoomAmenitiesTable() {
   const tableRef = useRef(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConfirmDisableOpen, setIsConfirmDisableOpen] = useState(false);
+  const [editingAmenity, setEditingAmenity] = useState<Amenity | null>(null);
+  const [disablingAmenity, setDisablingAmenity] = useState<Amenity | null>(null);
+  const [disabledAmenities, setDisabledAmenities] = useState<Set<string>>(new Set());
+  const [formData, setFormData] = useState<Partial<Amenity>>({});
+
+  const handleEdit = (amenity: Amenity) => {
+    setEditingAmenity(amenity);
+    setFormData({ ...amenity });
+    setIsEditOpen(true);
+  };
+
+  const handleDisable = (amenity: Amenity) => {
+    setDisablingAmenity(amenity);
+    setIsConfirmDisableOpen(true);
+  };
+
+  const confirmDisable = () => {
+    if (disablingAmenity) {
+      // Here you would typically make an API call to disable/hide the amenity
+      console.log('Disabling amenity:', disablingAmenity.id);
+      
+      // Add the amenity to the disabled list for visual feedback
+      setDisabledAmenities(prev => new Set([...prev, disablingAmenity.id]));
+      
+      setIsConfirmDisableOpen(false);
+      setDisablingAmenity(null);
+    }
+  };
+
+  const cancelDisable = () => {
+    setIsConfirmDisableOpen(false);
+    setDisablingAmenity(null);
+  };
+
+  const handleUpdate = () => {
+    if (editingAmenity && formData) {
+      console.log('Updating amenity:', formData);
+      setIsEditOpen(false);
+      setEditingAmenity(null);
+      setFormData({});
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditOpen(false);
+    setEditingAmenity(null);
+    setFormData({});
+  };
+
+  const handleInputChange = (field: keyof Amenity, value: string | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -91,27 +162,42 @@ export default function AllRoomAmenitiesTable() {
       table.dataTable thead tr td {
         font-weight: 700 !important;
       }
+      /* Disabled row styling */
+      table.dataTable tbody tr.disabled-row {
+        background-color: #f5f5f5 !important;
+        opacity: 0.6 !important;
+        text-decoration: line-through !important;
+      }
+      table.dataTable tbody tr.disabled-row:hover {
+        background-color: #eeeeee !important;
+      }
+      /* Action button styling */
+      .edit-btn:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
+      .disable-btn:active:not([disabled]) {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
     `;
     document.head.appendChild(style);
 
-    const handleScroll = () => {
-      const collection = document.querySelector(".dt-button-collection");
-      if (collection && (collection as HTMLElement).style.display !== "none") {
-        (collection as HTMLElement).style.display = "none";
+    const handleButtonClick = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const amenityId = target.getAttribute('data-id') || target.closest('button')?.getAttribute('data-id');
+      const amenity = amenities.find(a => a.id === amenityId);
+      
+      if (amenity) {
+        if (target.classList.contains('edit-btn') || target.closest('.edit-btn')) {
+          handleEdit(amenity);
+        } else if (target.classList.contains('disable-btn') || target.closest('.disable-btn')) {
+          handleDisable(amenity);
+        }
       }
     };
-
-    const scrollContainer = document.querySelector(".dataTables_scrollBody");
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      document.head.removeChild(style);
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", handleScroll);
-      }
-    };
+    // Add event listener for edit and disable buttons
+    document.addEventListener('click', handleButtonClick);
   }, []);
 
   const columns = [
@@ -139,16 +225,57 @@ export default function AllRoomAmenitiesTable() {
       title: "Actions",
       orderable: false,
       searchable: false,
-      render: () => `
-        <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor: pointer;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-           class="lucide lucide-pencil">
-           <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 
-           0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-           <path d="m15 5 4 4"/>
-          </svg>
-        </button>`,
+      render: (_data: any, _type: any, row: Amenity) => {
+        const isDisabled = disabledAmenities.has(row.id);
+        return `
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button 
+              class="edit-btn" 
+              data-id="${row.id}" 
+              title="Edit Amenity"
+              style="
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                ${isDisabled ? 'opacity: 0.5;' : ''}
+              "
+              onmouseover="this.style.background='#2563eb'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'"
+              onmouseout="this.style.background='#3b82f6'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'"
+            >
+              Edit
+            </button>
+            <button 
+              class="disable-btn" 
+              data-id="${row.id}" 
+              title="${isDisabled ? 'Already Disabled' : 'Disable Record'}"
+              style="
+                background: ${isDisabled ? '#6b7280' : '#dc2626'};
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              "
+              ${isDisabled ? 'disabled' : ''}
+              onmouseover="${!isDisabled ? `this.style.background='#b91c1c'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'` : ''}"
+              onmouseout="${!isDisabled ? `this.style.background='#dc2626'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'` : ''}"
+            >
+              ${isDisabled ? 'Disabled' : 'Disable'}
+            </button>
+          </div>
+        `;
+      },
     },
   ];
 
@@ -170,6 +297,7 @@ export default function AllRoomAmenitiesTable() {
             scrollX: true,
             scrollY: "calc(100vh - 350px)",
             scrollCollapse: true,
+            fixedColumns: { leftColumns: 1 },
             layout: {
               topStart: "buttons",
               topEnd: "search",
@@ -184,9 +312,123 @@ export default function AllRoomAmenitiesTable() {
               },
             ],
             columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+            rowCallback: (row: any, data: any) => {
+              if (disabledAmenities.has(data.id)) {
+                row.classList.add('disabled-row');
+              } else {
+                row.classList.remove('disabled-row');
+              }
+              return row;
+            },
           }}
         />
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Room Amenity</DialogTitle>
+            <DialogDescription>
+              Make changes to the room amenity details below.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {formData && (
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Amenity Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name || ''}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={formData.description || ''}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Optional description"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="isActive">Status</Label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive || false}
+                    onChange={(e) => handleInputChange('isActive', e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="isActive" className="text-sm font-medium text-gray-900">
+                    Active
+                  </label>
+                </div>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="id">Amenity ID</Label>
+                <Input
+                  id="id"
+                  value={formData.id || ''}
+                  onChange={(e) => handleInputChange('id', e.target.value)}
+                  disabled
+                  className="bg-gray-100"
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate}>
+              Update
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog for Disable Action */}
+      <Dialog open={isConfirmDisableOpen} onOpenChange={setIsConfirmDisableOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Disable</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to disable this room amenity? This action will hide the record from the database.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {disablingAmenity && (
+            <div className="py-4">
+              <p className="text-sm text-gray-600">
+                <strong>Amenity ID:</strong> {disablingAmenity.id}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Name:</strong> {disablingAmenity.name}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Status:</strong> {disablingAmenity.isActive ? 'Active' : 'Inactive'}
+              </p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDisable}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDisable}>
+              Yes, Disable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

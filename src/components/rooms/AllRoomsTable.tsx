@@ -11,6 +11,9 @@ import "datatables.net-dt/css/dataTables.dataTables.css";
 import "datatables.net-buttons-dt/css/buttons.dataTables.css";
 import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
 
+import "datatables.net-fixedcolumns";
+import "datatables.net-fixedcolumns-dt/css/fixedColumns.dataTables.css";
+
 import AllRoomTypes from "./allrooms.json";
 import { useEffect, useRef } from "react";
 
@@ -89,25 +92,6 @@ export default function RoomsTable() {
       }
     `;
     document.head.appendChild(style);
-
-    const handleScroll = () => {
-      const collection = document.querySelector(".dt-button-collection");
-      if (collection && (collection as HTMLElement).style.display !== "none") {
-        (collection as HTMLElement).style.display = "none";
-      }
-    };
-
-    const scrollContainer = document.querySelector(".dataTables_scrollBody");
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      document.head.removeChild(style);
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", handleScroll);
-      }
-    };
   }, []);
 
   const columns = [
@@ -166,6 +150,7 @@ export default function RoomsTable() {
             paging: true,
             info: true,
             scrollX: true,
+            fixedColumns: { leftColumns: 2},
             scrollCollapse: true,
             scrollY: "400px",
             layout: {

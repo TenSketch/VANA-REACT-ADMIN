@@ -6,8 +6,23 @@ import "datatables.net-buttons";
 import "datatables.net-buttons/js/buttons.colVis.js";
 import "datatables.net-columncontrol-dt";
 import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
+
+import "datatables.net-fixedcolumns";
+import "datatables.net-fixedcolumns-dt/css/fixedColumns.dataTables.css";
+
 import GuestData from "./guestdata.json";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 DataTable.use(DT);
 
@@ -26,6 +41,7 @@ const guests: Guest[] = GuestData;
 
 const exportToExcel = () => {
   const headers = [
+    "S.No",
     "Guest ID",
     "Full Name",
     "Phone",
@@ -38,7 +54,8 @@ const exportToExcel = () => {
 
   const csvContent = [
     headers.join(","),
-    ...guests.map(row => [
+    ...guests.map((row, idx) => [
+      idx + 1,
       `"${row.id}"`,
       `"${row.fullName}"`,
       `"${row.phone}"`,
@@ -62,6 +79,59 @@ const exportToExcel = () => {
 
 export default function GuestTable() {
   const tableRef = useRef(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConfirmDisableOpen, setIsConfirmDisableOpen] = useState(false);
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const [disablingGuest, setDisablingGuest] = useState<Guest | null>(null);
+  const [disabledGuests, setDisabledGuests] = useState<Set<string>>(new Set());
+  const [formData, setFormData] = useState<Partial<Guest>>({});
+
+  const handleEdit = (guest: Guest) => {
+    setEditingGuest(guest);
+    setFormData({ ...guest });
+    setIsEditOpen(true);
+  };
+
+  const handleDisable = (guest: Guest) => {
+    setDisablingGuest(guest);
+    setIsConfirmDisableOpen(true);
+  };
+
+  const confirmDisable = () => {
+    if (disablingGuest) {
+      console.log('Disabling guest:', disablingGuest.id);
+      setDisabledGuests(prev => new Set([...prev, disablingGuest.id]));
+      setIsConfirmDisableOpen(false);
+      setDisablingGuest(null);
+    }
+  };
+
+  const cancelDisable = () => {
+    setIsConfirmDisableOpen(false);
+    setDisablingGuest(null);
+  };
+
+  const handleUpdate = () => {
+    if (editingGuest && formData) {
+      console.log('Updating guest:', formData);
+      setIsEditOpen(false);
+      setEditingGuest(null);
+      setFormData({});
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditOpen(false);
+    setEditingGuest(null);
+    setFormData({});
+  };
+
+  const handleInputChange = (field: keyof Guest, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -130,32 +200,56 @@ export default function GuestTable() {
       table.dataTable thead tr td {
         font-weight: 700 !important;
       }
+      /* Disabled row styling */
+      table.dataTable tbody tr.disabled-row {
+        background-color: #f5f5f5 !important;
+        opacity: 0.6 !important;
+        text-decoration: line-through !important;
+      }
+      table.dataTable tbody tr.disabled-row:hover {
+        background-color: #eeeeee !important;
+      }
+      /* Action button styling */
+      .edit-btn:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
+      .disable-btn:active:not([disabled]) {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
     `;
     document.head.appendChild(style);
 
-    const handleScroll = () => {
-      const collection = document.querySelector(".dt-button-collection");
-      if (collection && (collection as HTMLElement).style.display !== "none") {
-        (collection as HTMLElement).style.display = "none";
+    const handleButtonClick = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const guestId = target.getAttribute('data-id') || target.closest('button')?.getAttribute('data-id');
+      const guest = guests.find(g => g.id === guestId);
+      
+      if (guest) {
+        if (target.classList.contains('edit-btn') || target.closest('.edit-btn')) {
+          handleEdit(guest);
+        } else if (target.classList.contains('disable-btn') || target.closest('.disable-btn')) {
+          handleDisable(guest);
+        }
       }
     };
 
-    const scrollContainer = document.querySelector(".dataTables_scrollBody");
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
-    }
+    document.addEventListener('click', handleButtonClick);
 
-    return () => {
-      document.head.removeChild(style);
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", handleScroll);
-      }
-    };
   }, []);
 
   const columns = [
-    { data: "id", title: "Guest ID" },
+    {
+      title: "S.No",
+      data: null,
+      render: (_data: any, _type: any, _row: any, meta: any) =>
+        meta.row + 1 + meta.settings._iDisplayStart,
+      orderable: false,
+      searchable: false
+    },
     { data: "fullName", title: "Full Name" },
+    { data: "id", title: "Guest ID" },
     { data: "phone", title: "Phone" },
     { data: "email", title: "Email" },
     {
@@ -172,15 +266,57 @@ export default function GuestTable() {
       title: "Actions",
       orderable: false,
       searchable: false,
-      render: () => `
-        <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor:pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil">
-            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-            <path d="m15 5 4 4"/>
-          </svg>
-        </button>
-      `,
+      render: (_data: any, _type: any, row: Guest) => {
+        const isDisabled = disabledGuests.has(row.id);
+        return `
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button 
+              class="edit-btn" 
+              data-id="${row.id}" 
+              title="Edit Guest"
+              style="
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                ${isDisabled ? 'opacity: 0.5;' : ''}
+              "
+              onmouseover="this.style.background='#2563eb'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'"
+              onmouseout="this.style.background='#3b82f6'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'"
+            >
+              Edit
+            </button>
+            <button 
+              class="disable-btn" 
+              data-id="${row.id}" 
+              title="${isDisabled ? 'Already Disabled' : 'Disable Record'}"
+              style="
+                background: ${isDisabled ? '#6b7280' : '#dc2626'};
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              "
+              ${isDisabled ? 'disabled' : ''}
+              onmouseover="${!isDisabled ? `this.style.background='#b91c1c'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'` : ''}"
+              onmouseout="${!isDisabled ? `this.style.background='#dc2626'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'` : ''}"
+            >
+              ${isDisabled ? 'Disabled' : 'Disable'}
+            </button>
+          </div>
+        `;
+      },
     },
   ];
 
@@ -213,6 +349,7 @@ export default function GuestTable() {
             paging: true,
             info: true,
             scrollX: true,
+            fixedColumns: {leftColumns: 2},
             scrollY: "calc(100vh - 350px)",
             scrollCollapse: true,
             layout: {
@@ -229,9 +366,127 @@ export default function GuestTable() {
               }
             ],
             columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+            rowCallback: (row: any, data: any) => {
+              if (disabledGuests.has(data.id)) {
+                row.classList.add('disabled-row');
+              } else {
+                row.classList.remove('disabled-row');
+              }
+              return row;
+            },
           }}
         />
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Guest</DialogTitle>
+            <DialogDescription>
+              Make changes to the guest details below.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {formData && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  value={formData.fullName || ''}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                />
+              </div>  
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone || ''}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                />
+              </div>              
+              <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                />
+              </div>              
+              <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address || ''}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                />
+              </div>              
+              <div className="grid gap-2">
+                <Label htmlFor="registrationDate">Registration Date</Label>
+                <Input
+                  id="registrationDate"
+                  type="date"
+                  value={formData.registrationDate || ''}
+                  onChange={(e) => handleInputChange('registrationDate', e.target.value)}
+                />
+              </div>  
+              <div className="grid gap-2">
+                <Label htmlFor="id">Guest ID</Label>
+                <Input
+                  id="id"
+                  value={formData.id || ''}
+                  onChange={(e) => handleInputChange('id', e.target.value)}
+                  disabled
+                  className="bg-gray-100"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate}>
+              Update
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Confirmation Dialog for Disable Action */}
+      <Dialog open={isConfirmDisableOpen} onOpenChange={setIsConfirmDisableOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Disable</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to disable this guest record? This action will hide the record from the database.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {disablingGuest && (
+            <div className="py-4">
+              <p className="text-sm text-gray-600">
+                <strong>Guest ID:</strong> {disablingGuest.id}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Name:</strong> {disablingGuest.fullName}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Email:</strong> {disablingGuest.email}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDisable}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDisable}>
+              Yes, Disable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

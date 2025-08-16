@@ -7,8 +7,22 @@ import "datatables.net-buttons/js/buttons.colVis.js";
 import "datatables.net-columncontrol-dt";
 import "datatables.net-columncontrol-dt/css/columnControl.dataTables.css";
 
+import "datatables.net-fixedcolumns";
+import "datatables.net-fixedcolumns-dt/css/fixedColumns.dataTables.css";
+
 import cottageTypesData from "./cottagetypes.json";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 DataTable.use(DT);
 
@@ -24,6 +38,60 @@ const cottageTypes: CottageType[] = cottageTypesData;
 
 export default function CottageDataTable() {
   const tableRef = useRef(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConfirmDisableOpen, setIsConfirmDisableOpen] = useState(false);
+  const [editingCottage, setEditingCottage] = useState<CottageType | null>(null);
+  const [disablingCottage, setDisablingCottage] = useState<CottageType | null>(null);
+  const [disabledCottages, setDisabledCottages] = useState<Set<string>>(new Set());
+  const [formData, setFormData] = useState<Partial<CottageType>>({});
+
+  const handleEdit = (cottage: CottageType) => {
+    setEditingCottage(cottage);
+    setFormData({ ...cottage });
+    setIsEditOpen(true);
+  };
+
+  const handleDisable = (cottage: CottageType) => {
+    setDisablingCottage(cottage);
+    setIsConfirmDisableOpen(true);
+  };
+
+  const confirmDisable = () => {
+    if (disablingCottage) {
+      console.log('Disabling cottage:', disablingCottage.id);
+      setDisabledCottages(prev => new Set([...prev, disablingCottage.id]));
+      
+      setIsConfirmDisableOpen(false);
+      setDisablingCottage(null);
+    }
+  };
+
+  const cancelDisable = () => {
+    setIsConfirmDisableOpen(false);
+    setDisablingCottage(null);
+  };
+
+  const handleUpdate = () => {
+    if (editingCottage && formData) {
+      console.log('Updating cottage:', formData);
+      setIsEditOpen(false);
+      setEditingCottage(null);
+      setFormData({});
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditOpen(false);
+    setEditingCottage(null);
+    setFormData({});
+  };
+
+  const handleInputChange = (field: keyof CottageType, value: string | string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -92,30 +160,54 @@ export default function CottageDataTable() {
       table.dataTable thead tr td {
         font-weight: 700 !important;
       }
+      /* Disabled row styling */
+      table.dataTable tbody tr.disabled-row {
+        background-color: #f5f5f5 !important;
+        opacity: 0.6 !important;
+        text-decoration: line-through !important;
+      }
+      table.dataTable tbody tr.disabled-row:hover {
+        background-color: #eeeeee !important;
+      }
+      /* Action button styling */
+      .edit-btn:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
+      .disable-btn:active:not([disabled]) {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
     `;
     document.head.appendChild(style);
 
-    const handleScroll = () => {
-      const collection = document.querySelector(".dt-button-collection");
-      if (collection && (collection as HTMLElement).style.display !== "none") {
-        (collection as HTMLElement).style.display = "none";
+    const handleButtonClick = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const cottageId = target.getAttribute('data-id') || target.closest('button')?.getAttribute('data-id');
+      const cottage = cottageTypes.find(c => c.id === cottageId);
+      
+      if (cottage) {
+        if (target.classList.contains('edit-btn') || target.closest('.edit-btn')) {
+          handleEdit(cottage);
+        } else if (target.classList.contains('disable-btn') || target.closest('.disable-btn')) {
+          handleDisable(cottage);
+        }
       }
     };
 
-    const scrollContainer = document.querySelector(".dataTables_scrollBody");
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
-    }
+    document.addEventListener('click', handleButtonClick);
 
-    return () => {
-      document.head.removeChild(style);
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", handleScroll);
-      }
-    };
   }, []);
 
   const columns = [
+    {
+      title: "S.No",
+      data: null,
+      render: (_data: any, _type: any, _row: any, meta: any) =>
+        meta.row + 1 + meta.settings._iDisplayStart,
+      orderable: false,
+      searchable: false,
+    },
     { data: "cottageName", title: "Cottage Name" },
     {
       data: "resort",
@@ -135,7 +227,7 @@ export default function CottageDataTable() {
         `<div style="display: flex; flex-wrap: wrap; gap: 4px;">
           ${data
             .map(
-              item => `
+              (item) => `
                 <span style="
                   background: #dbeafe;
                   color: #1e3a8a;
@@ -156,19 +248,60 @@ export default function CottageDataTable() {
       title: "Actions",
       orderable: false,
       searchable: false,
-      render: () => `
-        <button class="edit-btn" title="Edit" style="border: none; background: none; margin-right: 8px; cursor: pointer;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-            fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"
-            class="lucide lucide-pencil">
-            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-            <path d="m15 5 4 4"/>
-          </svg>
-        </button>
-      `,
+      render: (_data: any, _type: any, row: CottageType) => {
+        const isDisabled = disabledCottages.has(row.id);
+        return `
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button 
+              class="edit-btn" 
+              data-id="${row.id}" 
+              title="Edit Cottage"
+              style="
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                ${isDisabled ? 'opacity: 0.5;' : ''}
+              "
+              onmouseover="this.style.background='#2563eb'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'"
+              onmouseout="this.style.background='#3b82f6'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'"
+            >
+              Edit
+            </button>
+            <button 
+              class="disable-btn" 
+              data-id="${row.id}" 
+              title="${isDisabled ? 'Already Disabled' : 'Disable Record'}"
+              style="
+                background: ${isDisabled ? '#6b7280' : '#dc2626'};
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              "
+              ${isDisabled ? 'disabled' : ''}
+              onmouseover="${!isDisabled ? `this.style.background='#b91c1c'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.15)'` : ''}"
+              onmouseout="${!isDisabled ? `this.style.background='#dc2626'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'` : ''}"
+            >
+              ${isDisabled ? 'Disabled' : 'Disable'}
+            </button>
+          </div>
+        `;
+      },
     },
   ];
+
 
   return (
     <div className="flex flex-col h-full max-h-screen overflow-hidden p-3 py-8">
@@ -186,6 +319,7 @@ export default function CottageDataTable() {
             paging: true,
             info: true,
             scrollX: true,
+            fixedColumns: { leftColumns: 2},
             scrollY: "calc(100vh - 350px)",
             scrollCollapse: true,
             layout: {
@@ -202,9 +336,125 @@ export default function CottageDataTable() {
               },
             ],
             columnControl: ["order", ["orderAsc", "orderDesc", "spacer", "search"]],
+            rowCallback: (row: any, data: any) => {
+              if (disabledCottages.has(data.id)) {
+                row.classList.add('disabled-row');
+              } else {
+                row.classList.remove('disabled-row');
+              }
+              return row;
+            },
           }}
         />
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Cottage Type</DialogTitle>
+            <DialogDescription>
+              Make changes to the cottage type details below.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {formData && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="cottageName">Cottage Name</Label>
+                <Input
+                  id="cottageName"
+                  value={formData.cottageName || ''}
+                  onChange={(e) => handleInputChange('cottageName', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="resort">Resort</Label>
+                <Input
+                  id="resort"
+                  value={formData.resort || ''}
+                  onChange={(e) => handleInputChange('resort', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={formData.description || ''}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="roomAmenities">Room Amenities (comma-separated)</Label>
+                <Input
+                  id="roomAmenities"
+                  value={formData.roomAmenities?.join(', ') || ''}
+                  onChange={(e) => handleInputChange('roomAmenities', e.target.value.split(',').map(s => s.trim()))}
+                  placeholder="WiFi, AC, TV, Mini Fridge"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="id">Cottage ID</Label>
+                <Input
+                  id="id"
+                  value={formData.id || ''}
+                  onChange={(e) => handleInputChange('id', e.target.value)}
+                  disabled
+                  className="bg-gray-100"
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate}>
+              Update
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog for Disable Action */}
+      <Dialog open={isConfirmDisableOpen} onOpenChange={setIsConfirmDisableOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Disable</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to disable this cottage type? This action will hide the record from the database.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {disablingCottage && (
+            <div className="py-4">
+              <p className="text-sm text-gray-600">
+                <strong>Cottage ID:</strong> {disablingCottage.id}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Name:</strong> {disablingCottage.cottageName}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Resort:</strong> {disablingCottage.resort}
+              </p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDisable}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDisable}>
+              Yes, Disable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
